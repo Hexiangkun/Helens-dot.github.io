@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2022-09-18T07:24:44.918Z</updated>
+  <updated>2022-09-20T10:24:10.456Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://example.com/2022/09/18/Daliy-Calorie/"/>
     <id>http://example.com/2022/09/18/Daliy-Calorie/</id>
     <published>2022-09-18T02:58:12.000Z</published>
-    <updated>2022-09-18T07:24:44.918Z</updated>
+    <updated>2022-09-20T10:24:10.456Z</updated>
     
-    <content type="html"><![CDATA[<!DOCTYPE html><html lang="en"><head>    <meta charset="UTF-8">    <meta http-equiv="X-UA-Compatible" content="IE=edge">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Document</title>    <style>        /* 标签选择器 */    h2 {        font-family: "微软雅黑";    }    p {        font-family: "楷体";        font-size:20px;    }    b {        font-family: "楷体";        font-size:20px;    }    li{        font-family: "楷体";        font-size:20px;    }    </style></head><body>    <h1 align="center">Daliy Calorie App</h1>    </br>    <h2 align="left"> 1. Background </h2><div style="text-indent:2em;">    <p >        After the third scientific and technological revolution, the quality of life of modern people has improved rapidly, famine has left us, and few people are hungry.    </p></div></br><div style="text-indent:2em;"><p >            After the third scientific and technological revolution, the quality of life of modern people has improved rapidly, famine has left us, and few people are hungry.        </p>    </div></br><div style="width:70%;margin:auto"><img src="/2022/09/18/Daliy-Calorie/1.png" class=""> </div><center>1. 全球女性在1975-2016年肥胖人数曲线图<sup>1</sup></center></br><div style="width:70%;margin:auto"><img src="/2022/09/18/Daliy-Calorie/2.png" class=""> </div><center>2. 全球男性在1975-2016年肥胖人数曲线图<sup>2</sup></center></br><div style="text-indent:2em;">    <p>        In recent years, more and more people have a strong demand for healthy living and body management, so we hope to make such an app to control people's calorie and nutrient intake, and provide corresponding diet plans and Athletic training program.      </p></div></br><h2 align="left">2. Application function</h2><div style="text-indent:2em;">    <p >        Calculate the daily calorie profit and loss and daily nutrient intake, control the user's weight, provide nutrition and training programs, and help users achieve a healthy life.    </p></div></br><h2 align="left">3. Calculation formula</h2><div style="text-indent:2em;">     <b>(1). daily food calorie intake - basal metabolism - exercise consumption = daily calorie gain and loss</b></div></br><div style="text-indent:2em;">    <p>        (2). The daily food calorie and nutrient intake are captured by the in-app camera, and the category and weight of the food are identified by artificial intelligence.    </p></div></br><div style="text-indent:2em;">    <p>        (3). The calculation formula of rough measurement of basal metabolic rate is :    </p></div><div style="text-indent:4em;">    <b>        Female basal metabolic rate=661+9.6×weight (kg)+1.72×height (cm)-4.7×age    </b></div><div style="text-indent:4em;">    <b>        Male basal metabolic rate=67+13.73×weight (kg)+5×height (cm)-6.9×age    </b></div></br><div style="text-indent:2em;">    <p>        (4). Exercise consumption is calculated by the smart bracelet.    </p></div></br><h2 align="left">4. Target users</h2><div style="text-indent:2em;">    <p>        Humans who have requirements for weight control and healthy living, or fitness people who need to gain muscle or lose fat.    </p></div> </br><h2 align="left">5. Team division of labor</h2><div style="text-indent:2em;">    <p>        5 for demand, 10 for design, 10 for development, 5 for testing, 5 for project, 5 for operation and maintenance, and 3 for overall management.    </p></div></br><h2 align="left">6. Design tasks and solutions to corresponding problems</h2><ul><li>              Calculate the daily food calorie and nutrient intake.    </li></ul><div style="text-indent:2em;">    <p>        Authorize the camera, put food on a custom-sized plate (do not stack food), take a photo, identify the category and weight of things through a pre-trained deep learning network, query the nutrients and calories per unit mass of food in the database, and calculate Calorie intake and nutrients.    </p></div></br><ul>    <li>        Calculate the basal metabolism of the human body.    </li></ul><div style="text-indent:2em;">    <p>        Due to the difference of each person's constitution and hormones, it is difficult to accurately measure the basal metabolic rate. We use the calculation formula of the basal metabolic rate:    </p></div><div style="text-indent:4em;">    <b>        Female basal metabolic rate=661+9.6×weight (kg)+1.72×height (cm)-4.7×age    </b></div><div style="text-indent:4em;">    <b>        Male basal metabolic rate=67+13.73×weight (kg)+5×height (cm)-6.9×age    </b></div></br><ul>    <li>Healthy eating plan.</li></ul><div style="text-indent:2em;">    <p>        According to the user's eating habits, give a healthy eating plan (can be customized after payment). According to the user's heart rate and exercise habits, remind the user that they should exercise or take a proper rest, and give a training plan in stages (can be customized after payment)    </p></div></br><ul>        <li>Daily popularize. </li></ul><div style="text-indent:2em;">    <p >        Daily popularize  the nutritional content of healthy food, and call on users to consume more organic food to improve users' dietary sensitivity.    </p></div></br><p>参考链接：</p><ol><li><a href="https://ncdrisc.org/obesity-population-stacked.html">NCD-RisC</a></li><li><a href="https://ncdrisc.org/obesity-population-stacked.html">NCD-RisC</a></li></ol>]]></content>
+    <content type="html"><![CDATA[<!DOCTYPE html><html lang="en"><head>    <meta charset="UTF-8">    <meta http-equiv="X-UA-Compatible" content="IE=edge">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Document</title>    <style>        /* 标签选择器 */    h2 {        font-family: "微软雅黑";    }    p {        font-family: "楷体";        font-size:20px;    }    b {        font-family: "楷体";        font-size:20px;    }    li{        font-family: "楷体";        font-size:20px;    }    </style></head><body>    <h1 align="center">Daliy Calorie App</h1>    </br>    <h2 align="left"> 1. Background </h2><div style="text-indent:2em;">    <p >        After the third scientific and technological revolution, the quality of life of modern people has improved rapidly, famine has left us, and few people are hungry.    </p></div></br><div style="text-indent:2em;"><p >            After the third scientific and technological revolution, the quality of life of modern people has improved rapidly, famine has left us, and few people are hungry.        </p>    </div></br><div style="width:70%;margin:auto"><img src="/2022/09/18/Daliy-Calorie/1.png" class=""> </div><center>1. Global graph of the number of obese women in 1975-2016<sup>1</sup></center></br><div style="width:70%;margin:auto"><img src="/2022/09/18/Daliy-Calorie/2.png" class=""> </div><center>2. Global male obesity graph from 1975-2016<sup>2</sup></center></br><div style="text-indent:2em;">    <p>        In recent years, more and more people have a strong demand for healthy living and body management, so we hope to make such an app to control people's calorie and nutrient intake, and provide corresponding diet plans and Athletic training program.      </p></div></br><h2 align="left">2. Application function</h2><div style="text-indent:2em;">    <p >        (1). Calculate the daily calorie profit and loss and daily nutrient intake.    </p>    <p >        (2). Control the user's weight.    </p>    <p >        (3). Provide nutrition and training programs.    </p>    <p >        (4). Help users achieve a healthy life.    </p></div></br><h2 align="left">3. Calculation formula</h2><div style="text-indent:2em;">     <p>(1). daily food calorie intake - basal metabolism - exercise consumption = daily calorie gain and loss</p></div></br><div style="text-indent:2em;">    <p>        (2). The daily food calorie and nutrient intake are captured by the in-app camera, and the category and weight of the food are identified by artificial intelligence.    </p></div></br><div style="text-indent:2em;">    <p>        (3). The calculation formula of rough measurement of basal metabolic rate is :    </p></div><div style="text-indent:4em;">    <b>        Female basal metabolic rate=661+9.6×weight (kg)+1.72×height (cm)-4.7×age    </b></div><div style="text-indent:4em;">    <b>        Male basal metabolic rate=67+13.73×weight (kg)+5×height (cm)-6.9×age    </b></div></br><div style="text-indent:2em;">    <p>        (4). Exercise consumption is calculated by the smart bracelet.    </p></div></br><h2 align="left">4. Target users</h2><div style="text-indent:2em;">    <p>        Our target demographic is more inclined to young people.Humans who have requirements for weight control and healthy living, or fitness people who need to gain muscle or lose fat.    </p></div> <div style="width:70%;margin:auto"><img src="/2022/09/18/Daliy-Calorie/8.png" class=""> </div><center>3. Age distribution of fitness people<sup>3</sup></center></br><h2 align="left">5. Team division of labor</h2><div style="text-indent:2em;">    <p>        5 for demand, 10 for design, 10 for development, 5 for testing, 5 for project, 5 for operation and maintenance, and 3 for overall management.    </p></div></br><h2 align="left">6. Design tasks and solutions to corresponding problems</h2><ul><li>              Calculate the daily food calorie and nutrient intake.    </li></ul><div style="text-indent:2em;">    <p>        Authorize the camera, put food on a custom-sized plate (do not stack food), take a photo, identify the category and weight of things through a pre-trained deep learning network, query the nutrients and calories per unit mass of food in the database, and calculate Calorie intake and nutrients.    </p></div></br><ul>    <li>        Calculate the basal metabolism of the human body.    </li></ul><div style="text-indent:2em;">    <p>        Due to the difference of each person's constitution and hormones, it is difficult to accurately measure the basal metabolic rate. We use the calculation formula of the basal metabolic rate:    </p></div><div style="text-indent:4em;">    <b>        Female basal metabolic rate=661+9.6×weight (kg)+1.72×height (cm)-4.7×age    </b></div><div style="text-indent:4em;">    <b>        Male basal metabolic rate=67+13.73×weight (kg)+5×height (cm)-6.9×age    </b></div></br><ul>    <li> Calculate the exercise consumption.</li></ul><div style="text-indent:2em;">    <p>        Bring a sports bracelet (such as Xiaomi sports bracelet), bind the sports bracelet to the daily calorie app, and calculate the energy consumed by the daily walking steps and the exercise time of the corresponding exercise (the Xiaomi sports bracelet has been implement this function)    </p></div><div style="width:70%;margin:auto"><img src="/2022/09/18/Daliy-Calorie/5.png" class=""> </div><center>4. Fitness crowd smart device wear distribution<sup>4</sup></center><ul>    <li>Healthy eating plan.</li></ul><div style="text-indent:2em;">    <p>        According to the user's eating habits, give a healthy eating plan (can be customized after payment). According to the user's heart rate and exercise habits, remind the user that they should exercise or take a proper rest, and give a training plan in stages (can be customized after payment)    </p></div></br><ul>        <li>Daily popularize. </li></ul><div style="text-indent:2em;">    <p >        Daily popularize  the nutritional content of healthy food, and call on users to consume more organic food to improve users' dietary sensitivity.    </p></div></br><p>参考链接：</p><ol><li><a href="https://ncdrisc.org/obesity-population-stacked.html">NCD-RisC</a></li><li><a href="https://ncdrisc.org/obesity-population-stacked.html">NCD-RisC</a></li><li><a href="https://www.mob.com/mobdata/report/153">MobTech</a></li><li><a href="https://www.getui.com/reports/2021061505">每日互动</a></li></ol>]]></content>
     
     
       
@@ -40,33 +40,6 @@
     
     
     <category term="HCI" scheme="http://example.com/tags/HCI/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>test1</title>
-    <link href="http://example.com/2022/09/18/test1/"/>
-    <id>http://example.com/2022/09/18/test1/</id>
-    <published>2022-09-18T02:53:53.000Z</published>
-    <updated>2022-09-18T03:13:27.134Z</updated>
-    
-    <content type="html"><![CDATA[<!DOCTYPE html><html lang="en"><head>    <meta charset="UTF-8">    <meta http-equiv="X-UA-Compatible" content="IE=edge">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Document</title>    <style>        /* 标签选择器 */    h5 {        font-family: "微软雅黑";    }    p {        font-family: "楷体";    }    </style></head><body>    <h1 align="center">Daliy Calorie App</h1>    </br>    <h2 align="left"> Background </h2>    <div style="text-indent:2em;">        <p>        After the third scientific and technological revolution, the quality of life of modern people has improved rapidly, famine has left us, and few people are hungry.        </p>    </div>    <h5>小诗</h5>    <p>生命的树上</p>     <p>雕了一枝花</p>    <p>谢落在我的怀里 ，</p>    <p>轻轻的压在心上。</p>    <p>她接触了心中的音乐</p>    <p>化成小诗一朵。</p></body></html>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;!DOCTYPE html&gt;
-&lt;html lang=&quot;en&quot;&gt;
-&lt;head&gt;
-    &lt;meta charset=&quot;UTF-8&quot;&gt;
-    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
-    &lt;meta name=</summary>
-      
-    
-    
-    
-    
-    <category term="test" scheme="http://example.com/tags/test/"/>
     
   </entry>
   
@@ -89,34 +62,6 @@
     
     
     <category term="HCI" scheme="http://example.com/tags/HCI/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>测试文章</title>
-    <link href="http://example.com/2022/09/11/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/"/>
-    <id>http://example.com/2022/09/11/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</id>
-    <published>2022-09-11T11:35:20.000Z</published>
-    <updated>2022-09-11T11:23:15.456Z</updated>
-    
-    <content type="html"><![CDATA[<p>这是一篇测试文章</p><img src="/2022/09/11/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/1.jpg" class="" title="图片引用方法一">]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;这是一篇测试文章&lt;/p&gt;
-&lt;img src=&quot;/2022/09/11/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/1.jpg&quot; class=&quot;&quot; title=&quot;图片引用方法一&quot;&gt;
-
-
-</summary>
-      
-    
-    
-    
-    <category term="Java" scheme="http://example.com/categories/Java/"/>
-    
-    
-    <category term="原创" scheme="http://example.com/tags/%E5%8E%9F%E5%88%9B/"/>
     
   </entry>
   

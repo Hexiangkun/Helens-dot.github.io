@@ -2,19 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>http://example.com/2022/09/18/Daliy-Calorie/</loc>
-    <lastmod>2022-09-18</lastmod>
-  </url>
-  <url>
-    <loc>http://example.com/2022/09/18/test1/</loc>
-    <lastmod>2022-09-18</lastmod>
+    <lastmod>2022-09-20</lastmod>
   </url>
   <url>
     <loc>http://example.com/2022/09/17/Daily-Calorie-App/</loc>
     <lastmod>2022-09-18</lastmod>
-  </url>
-  <url>
-    <loc>http://example.com/2022/09/11/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</loc>
-    <lastmod>2022-09-11</lastmod>
   </url>
   <url>
     <loc>http://example.com/2022/09/11/hello-world/</loc>
