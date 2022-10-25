@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2022-09-20T10:24:10.456Z</updated>
+  <updated>2022-10-25T13:12:41.664Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Daliy_Calorie_App</title>
+    <link href="http://example.com/2022/10/25/Daliy-Calorie-App/"/>
+    <id>http://example.com/2022/10/25/Daliy-Calorie-App/</id>
+    <published>2022-10-25T12:34:09.000Z</published>
+    <updated>2022-10-25T13:12:41.664Z</updated>
+    
+    <content type="html"><![CDATA[<!DOCTYPE html><html lang="en"><head>    <meta charset="UTF-8">    <meta http-equiv="X-UA-Compatible" content="IE=edge">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Document</title>    <style>        /* 标签选择器 */    h2 {        font-family: "微软雅黑";    }    p {        font-family: "楷体";        font-size:20px;    }    b {        font-family: "楷体";        font-size:20px;    }    li{        font-family: "楷体";        font-size:20px;    }    </style></head><body>    <h1 align="center">Title: Daliy Calorie App</h1>    </br>    <h2 align="left"> 1. Problem </h2><div style="text-indent:2em;">    <p >        After the third scientific and technological revolution, the quality of life of modern people has improved rapidly, famine has left us, and few people are hungry.    </p></div></br><div style="text-indent:2em;"><p >            In recent years, more and more people have a strong demand for healthy living and body management, so we hope to make such an app to control people's calorie and nutrient intake, and provide corresponding diet plans and Athletic training program.        </p>    </div></br><h2 align="left">2. Users</h2><div style="text-indent:2em;">    <b >        So our target demographic is more inclined to young people.Humans who have requirements for weight control and healthy living, or fitness people who need to gain muscle or lose fat.    </b></div><div style="text-indent:2em;">    <p >        (1). Women: They usually focus on fat reduction, shaping and postpartum repair, and record and test their diet health through fitness apps;    </p>    <p >        (2). Men: They usually lose weight and gain muscle;    </p>    <p >        (3). Teenagers: They make scientific and reasonable sports plans to help themselves grow up healthily;    </p>    <p >        (4). The elderly: They pay more attention to sports injury repair.    </p></div></br><h2 align="left">3. Task scenario</h2><div style="text-indent:2em;">     <b>(1). Having meals and want to control intake</b>    <p>        An obese person reduces his/her calorie intake through diet, so that his/her calorie intake is less than that required for daily basic metabolism.    </p></div><div style="text-indent:2em;">     <b>(2). Exercising and want find good plans</b>    <p>        Anyone who wants to have a better figure can achieve his desired figure by making a reasonable exercise plan.    </p></div><div style="text-indent:2em;">     <b>(3). Choosing foods with high protein and low fat</b>    <p>        Fitness professionals hope to increase their muscle circumference, calculate the daily intake of protein and fat, the minimum intake of carbohydrates, and formulate a reasonable vegetable diet.    </p></div><div style="text-indent:2em;">     <b>(4). Rational distribution of aerobic and anaerobic exercise</b>    <p>        For people who have reduced fat, it is necessary to increase the time of aerobic exercise and reduce the time of anaerobic exercise.    </p>    <p>        For people with muscle enhancement, it is necessary to increase anaerobic exercise time and reduce aerobic exercise time.       </p>    <p>        At the same time, ensure that strength training precedes aerobic exercise.    </p></div><div style="text-indent:2em;">     <b>(5). Planning for future exercising</b>    <p>        Anyone who wants to exercise should plan a future exercise plan to ensure that they are moving in the right direction.    </p></div></br><h2 align="left">4. Tasks</h2><div style="text-indent:2em;">     <b>(1). How to Calculate the daily calorie profit and loss</b>    <p>       daily food calorie intake - basal metabolism - exercise consumption = daily calorie gain and loss    </p>    <p>        The daily food calorie and nutrient intake are captured by the in-app camera, and the category and weight of the food are identified by artificial intelligence.    </p></div><div style="text-indent:2em;">     <p>        The calculation formula of rough measurement of basal metabolic rate is :    </p></div><div style="text-indent:4em;">    <b>        Female basal metabolic rate=661+9.6×weight (kg)+1.72×height (cm)-4.7×age    </b></div><div style="text-indent:4em;">    <b>        Male basal metabolic rate=67+13.73×weight (kg)+5×height (cm)-6.9×age    </b></div><div style="text-indent:2em;">     <p>        Exercise consumption is calculated by the smart bracelet.Bring a sports bracelet (such as Xiaomi sports bracelet), bind the sports bracelet to the daily calorie app, and calculate the energy consumed by the daily walking steps and the exercise time of the corresponding exercise (the Xiaomi sports bracelet has been implement this function)    </p></div><div style="text-indent:2em;">    <b>        (2). How to Calculate daily nutrient intake.    </b>    <p>       Authorize the camera, put food on a custom-sized plate (do not stack food), take a photo, identify the category and weight of things through a pre-trained deep learning network, query the nutrients and calories per unit mass of food in the database, and calculate Calorie intake and nutrients.    </p></div><div style="text-indent:2em;">    <b>        (3). How to Provide nutrition .    </b>    <p>        According to the user's eating habits and fitness purpose, give a healthy eating plan (can be customized after payment).     </p></div><div style="text-indent:2em;">    <b>        (4). How to provide training programs.    </b>    <p>        According to the user's heart rate and exercise habits, remind the user that they should exercise or take a proper rest, and give a training plan in stages (can be customized after payment)    </p></div><div style="text-indent:2em;">    <b>        (5). How to Help users achieve a healthy life.    </b>    <p>        Daily popularize the nutritional content of healthy food, and call on users to consume more organic food to improve users' dietary sensitivity.    </p></div></br><h2 align="left">5. Team role</h2><div style="text-indent:2em;">    <p>       Lin Tong: Detailed design    </p>    <p>       He Xiangkun : Perfect the design & Publish to website    </p></div>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+    &lt;meta name=</summary>
+      
+    
+    
+    
+    
+    <category term="HCI" scheme="http://example.com/tags/HCI/"/>
+    
+  </entry>
   
   <entry>
     <title>Daliy_Calorie</title>

@@ -1,3 +1,4 @@
+http://example.com/2022/10/25/Daliy-Calorie-App/
 http://example.com/2022/09/18/Daliy-Calorie/
 http://example.com/tags/index.html
 http://example.com/books/index.html
