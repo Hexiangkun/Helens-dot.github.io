@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>webserver | Hexo</title>
+  <meta name="description" content="一、常见的IO模型 同步阻塞IO用户线程通过系统调用read发起IO读操作。内核等待网卡的数据到来，把网卡数据拷贝到内核空间，再把数据拷贝到用户空间，最后唤醒用户线程。   用户只有在等待read将socket中的数据读取到是，才能继续处理接受的数据。 同步非阻塞IO需要将socket设置为NONBLOCK。这样用户通过系统调用read发起IO请求后可以立即返回。 由于socket是非阻塞的，因此">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webserver">
+<meta property="og:url" content="http://example.com/2023/04/09/webserver/index.html">
+<meta property="og:site_name" content="何相昆">
+<meta property="og:description" content="一、常见的IO模型 同步阻塞IO用户线程通过系统调用read发起IO读操作。内核等待网卡的数据到来，把网卡数据拷贝到内核空间，再把数据拷贝到用户空间，最后唤醒用户线程。   用户只有在等待read将socket中的数据读取到是，才能继续处理接受的数据。 同步非阻塞IO需要将socket设置为NONBLOCK。这样用户通过系统调用read发起IO请求后可以立即返回。 由于socket是非阻塞的，因此">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/dff409579a464691b1889a590abb8b41~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/%E5%90%8C%E6%AD%A5%E9%98%BB%E5%A1%9E.png">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/%E5%90%8C%E6%AD%A5%E9%9D%9E%E9%98%BB%E5%A1%9E.png">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8.png">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/%E5%BC%82%E6%AD%A5IO.png">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/Reactor%E6%A8%A1%E5%BC%8F.png">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/Proactor%E6%A8%A1%E5%BC%8F.png">
+<meta property="og:image" content="http://example.com/2023/04/09/webserver/%E6%A8%A1%E6%8B%9FProactor%E6%A8%A1%E5%BC%8F.png">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-cb47f33c3a2e5e3091013b945cf661c3_r.jpg">
+<meta property="article:published_time" content="2023-04-09T05:15:31.000Z">
+<meta property="article:modified_time" content="2023-04-09T05:43:35.428Z">
+<meta property="article:author" content="hexiangkun">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/dff409579a464691b1889a590abb8b41~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2023/04/09/webserver/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="何相昆" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Hexiangkun" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">HXK</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md"></h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Suzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="hhttps://github.com/Hexiangkun" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C/">C++</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/HCI/">HCI</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%8E%92%E5%BA%8F/">排序</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HCI/" rel="tag">HCI</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/" rel="tag">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%92%E5%BA%8F/" rel="tag">排序</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/C/" style="font-size: 13px;">C++</a> <a href="/tags/HCI/" style="font-size: 14px;">HCI</a> <a href="/tags/git/" style="font-size: 13px;">git</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 13px;">排序</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/webserver/" class="title">webserver</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:15:31.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/%E8%AE%A1%E7%BD%91/" class="title">(no title)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:13:21.872Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%8E%92%E5%BA%8F/">排序</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/%E6%8E%92%E5%BA%8F/" class="title">排序</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:12:01.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/git/">git</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/git%E6%A6%82%E8%BF%B0/" class="title">git概述</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:05:58.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/C++%E5%9F%BA%E7%A1%80/" class="title">C++基础</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T04:44:09.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-webserver" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      webserver
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/04/09/webserver/" class="article-date">
+	  <time datetime="2023-04-09T05:15:31.000Z" itemprop="datePublished">2023-04-09</time>
+	</a>
+</span>
+        
+        
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/04/09/webserver/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h3 id="一、常见的IO模型"><a href="#一、常见的IO模型" class="headerlink" title="一、常见的IO模型"></a>一、常见的IO模型</h3><p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/dff409579a464691b1889a590abb8b41~tplv-k3u1fbpfcp-zoom-in-crop-mark:4536:0:0:0.awebp" alt="在这里插入图片描述"></p>
+<h4 id="同步阻塞IO"><a href="#同步阻塞IO" class="headerlink" title="同步阻塞IO"></a>同步阻塞IO</h4><p>用户线程通过系统调用read发起IO读操作。内核等待网卡的数据到来，把网卡数据拷贝到内核空间，再把数据拷贝到用户空间，最后唤醒用户线程。</p>
+<img src="/2023/04/09/webserver/%E5%90%8C%E6%AD%A5%E9%98%BB%E5%A1%9E.png" class="">
+
+<p>用户只有在等待read将socket中的数据读取到是，才能继续处理接受的数据。</p>
+<h4 id="同步非阻塞IO"><a href="#同步非阻塞IO" class="headerlink" title="同步非阻塞IO"></a>同步非阻塞IO</h4><p>需要将socket设置为NONBLOCK。这样用户通过系统调用read发起IO请求后可以立即返回。</p>
+<p>由于socket是非阻塞的，因此用户线程发起IO请求时立即返回EWOULDBLOCK(EAGAIN)</p>
+<img src="/2023/04/09/webserver/%E5%90%8C%E6%AD%A5%E9%9D%9E%E9%98%BB%E5%A1%9E.png" class="">
+
+<p>用户需要不断的调用read，尝试读取socket中数据，直到读取成功，才能继续处理接收到的数据。</p>
+<h4 id="IO多路复用"><a href="#IO多路复用" class="headerlink" title="IO多路复用"></a>IO多路复用</h4><p>线程发起select调用，目的是询问内核数据是否准备完成。等内核把数据准备完成，用户线程发起read调用。在等待数据从内核空间拷贝到用户空间这段时间里，线程还是阻塞的。</p>
+<img src="/2023/04/09/webserver/IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8.png" class="">
+
+<p>IO多路复用基本原理就是select&#x2F;poll&#x2F;epoll系统调用，单个线程不断轮询select&#x2F;poll&#x2F;epoll所负责的连接，当某个连接有数据到达了，就返回这些读写连接。</p>
+<h4 id="异步IO"><a href="#异步IO" class="headerlink" title="异步IO"></a>异步IO</h4><p>用户线程发起read调用的同时注册一个回调函数，read立即返回。等待内核将数据准备好之后，再调用指定的回调函数完成处理。在这个过程中，用户线程一直没有阻塞。</p>
+<img src="/2023/04/09/webserver/%E5%BC%82%E6%AD%A5IO.png" class="">
+
+<h4 id="信号驱动IO"><a href="#信号驱动IO" class="headerlink" title="信号驱动IO"></a>信号驱动IO</h4><p>当进程发起一个IO操作，会向内核注册一个信号处理函数，然后进程返回不阻塞；当内核数据就绪时会发送一个信号给进程，进程便在信号处理函数中调用IO读取数据。</p>
+<h3 id="二、IO事件处理模式"><a href="#二、IO事件处理模式" class="headerlink" title="二、IO事件处理模式"></a>二、IO事件处理模式</h3><p>​	服务器项目程序通常需要处理三类事件：IO事件、信号、定时事件。</p>
+<h4 id="Reactor模式"><a href="#Reactor模式" class="headerlink" title="Reactor模式"></a>Reactor模式</h4><p>​	Reactor是这样一种模式，它要求主线程（IO处理单元）只负责监听文件描述上是否有事件发生，有的话立即将该事件通知工作线程（逻辑单元）。除此之外，主线程不做任何其他实质性的工作。读写数据，接受新的连接，以及处理客户请求均在工作线程中完成。</p>
+<p>​	使用同步IO模型（以epoll_wait为例）实现的Reactor模式的工作流程是：</p>
+<p>​	1）主线程往epoll内核事件表中注册socket上的读就绪事件。</p>
+<p>​	2）主线程调用epoll_wait等待socket上的读就绪事件。</p>
+<p>​	3）当socket上有数据可读时，epoll_wait通知主线程。主线程则将socket可读事件放入请求队列。</p>
+<p>​	4）睡眠在请求队列上的某个工作线程被唤醒，它从socket读取数据，并处理客户请求，然后往epoll内核事件表中注册该socket上的写就绪事件。</p>
+<p>​	5）主线程调用epoll_wait等待socket可写。</p>
+<p>​	6）当socket可写时，epoll_wait通知主线程。主线程将socket可写事件放入请求队列。</p>
+<p>​	7）睡眠在请求队列上的某个工作线程被唤醒，它往socket上写入服务器处理客户请求的结果。</p>
+<img src="/2023/04/09/webserver/Reactor%E6%A8%A1%E5%BC%8F.png" class="">
+
+<h4 id="Proactor模式"><a href="#Proactor模式" class="headerlink" title="Proactor模式"></a>Proactor模式</h4><p>Proactor模式将所有IO操作都交给主线程和内核来处理，工作线程仅仅负责业务逻辑。</p>
+<p>​	使用异步IO模型（以aio_read和aio_write为例）实现的Proactor模式的工作流程是：</p>
+<p>​	1）主线程调用aio_read函数向内核注册socket上的读完成事件，并告诉内核用户读缓冲区的位置，以及读操作完成时如何通知应用程序（这里以信号为例）</p>
+<p>​	2）主线程继续处理其他逻辑</p>
+<p>​	3）当socket上的数据被读入用户缓冲区后，内核将向应用程序发送一个信号，以通知应用程序数据已经可用。</p>
+<p>​	4）应用程序预先定义好的信号处理函数选择一个工作线程来处理客户请求。工作线程处理完客户请求之后，调用aio_write函数向内核注册socket上的写完成事件，并告诉内核用户写缓冲区的位置，以及写操作完成时如何通知应用程序（仍然以信号为例）</p>
+<p>​	5）主线程继续处理其他逻辑</p>
+<p>​	6）当用户缓冲区的数据被写入socket之后，内核向应用程序发送一个信号，以通知应用程序数据已经发送完毕</p>
+<p>​	7）应用程序预先定义好的信号处理函数选择一个工作线程来做善后处理，比如决定是否关闭socket。</p>
+<img src="/2023/04/09/webserver/Proactor%E6%A8%A1%E5%BC%8F.png" class="">
+
+<p>连接socket上的读写事件是通过aio_read&#x2F;aio_write向内核注册的，因此内核将通过信号来向应用程序报告连接socket上的读写事件。所以主线程的epoll_wait调用仅能用来检测监听socket上的连接请求事件，而不能用来检测连接socket上的读写事件。</p>
+<h4 id="模拟Proactor模式"><a href="#模拟Proactor模式" class="headerlink" title="模拟Proactor模式"></a>模拟Proactor模式</h4><p>使用同步IO方式模拟出Proactor模式的一种方式。其原理是：主线程执行数据读写操作，读写完成之后，主线程向工作线程通知这一“完成事件”。那么从工作线程的角度来看，它们就直接获得了数据读写的结果，接下来要做的只是对读写的结果进行逻辑处理。</p>
+<p>​	使用同步IO模型（以epoll_wait为例）模拟出的Proactor模式的工作流程如下：</p>
+<p>​	1）主线程往epoll内核事件表中注册socket上的读就绪事件</p>
+<p>​	2）主线程调用epoll_wait等待socket上有数据可读</p>
+<p>​	3）当socket上有数据可读时，epoll_wait通知主线程。主线程从socket循环读取数据，直到没有更多数据可读，然后将读取到的数据封装成一个请求对象并插入请求队列</p>
+<p>​	4）睡眠在请求队列上的某个工作线程被唤醒，它获得请求对象并处理客户请求，然后往epoll内核事件表中注册socket上的写就绪事件。</p>
+<p>​	5）主线程调用epoll_wait等待socket可写</p>
+<p>​	6）当socekt可写时，epoll_wait通知主线程。主线程往socket上写入服务器处理客户请求的结果</p>
+<img src="/2023/04/09/webserver/%E6%A8%A1%E6%8B%9FProactor%E6%A8%A1%E5%BC%8F.png" class="">
+
+<h3 id="三、两种高效的并发模式"><a href="#三、两种高效的并发模式" class="headerlink" title="三、两种高效的并发模式"></a>三、两种高效的并发模式</h3><h4 id="同步IO-x2F-异步IO"><a href="#同步IO-x2F-异步IO" class="headerlink" title="同步IO&#x2F;异步IO"></a>同步IO&#x2F;异步IO</h4><p>​	在IO模型中，“同步”和“异步”区分的是内核向应用程序通知的是何种IO事件（是就绪事件还是完成事件），以及该由谁来完成IO读写（是应用程序还是内核）。</p>
+<p>​	同步IO模型要求用户代码自行执行IO操作（将数据从内核缓冲区读入用户缓冲区，或将数据从用户缓冲区写入内核缓冲区）。</p>
+<p>​	异步IO机制则由内核来执行IO操作（数据在内核缓冲区和用户缓冲区之间的移动是由内核在“后台”完成的）。</p>
+<p>​	同步IO向应用程序通知的是IO就绪事件，异步IO向应用程序通知的是IO完成事件。</p>
+<h4 id="半同步-x2F-半异步模式"><a href="#半同步-x2F-半异步模式" class="headerlink" title="半同步&#x2F;半异步模式"></a>半同步&#x2F;半异步模式</h4><p>​	在并发模式中，“同步”是指程序完全按照代码序列的顺序执行；“异步”指的是程序的执行需要由系统事件（信号、中断等）来驱动。</p>
+<p>​	半同步&#x2F;半异步模式中，同步线程用于处理客户逻辑；异步线程用于处理IO事件。异步线程监听到客户请求后，就将其封装成请求对象并插入请求队列中。请求队列将通知某个工作在同步模式的工作线程来读取并处理该请求对象。</p>
+<p><strong>半同步&#x2F;半反应堆模式（Reactor）</strong></p>
+<p>异步线程（主线程）负责监听所有socket上的事件，如果监听socket上由有读事件发生，即有新的连接请求到来，主线程接受之以得到新的连接socket，然后往epoll内核事件表中注册该socket上的读写事件。如果连接socket上有读写事件发生，即有新的客户请求到来或有数据要发送给客户端，主线就将该连接socket插入请求队列中。所有工作线程都睡眠在请求队列上，当有任务到来时，它们通过竞争获得任务的接管权。工作线程自己从socket上读取客户请求和往socket写入服务器应答。</p>
+<p><strong>半同步&#x2F;半反应堆模式（Proactor）</strong></p>
+<p>主线程来完成数据的读写。主线程一般会将应用程序数据、任务类型等信息封装为一个任务对象，然后将其插入请求队列。工作线程从请求队列中取得任务对象后，即可直接处理，无须执行读写操作。</p>
+<h4 id="领导者-x2F-追随者模式"><a href="#领导者-x2F-追随者模式" class="headerlink" title="领导者&#x2F;追随者模式"></a>领导者&#x2F;追随者模式</h4><p>领导者&#x2F;追随者模式是多个工作线程轮流获取事件源集合，轮流监听、分发并处理事件的一种模式。在任意时间点，程序都仅有一个领导者线程，它负责监听IO事件。其他线程都是追随者，它们休眠在线程池中等待成为新的领导者。当前领导者如果检测到IO事件，首先从线程池中推选出新的领导者线程，然后处理IO事件。此时，新的领导者等待新的IO事件，而原来的领导者则处理IO事件，二者实现了并发。</p>
+<h3 id="四、IO复用的三种方法"><a href="#四、IO复用的三种方法" class="headerlink" title="四、IO复用的三种方法"></a>四、IO复用的三种方法</h3><h4 id="select"><a href="#select" class="headerlink" title="select"></a>select</h4><p>select把所有监听的文件描述符拷贝到内核中，挂起进程。当某个文件描述符可读或可写的时候，中断程序唤起进程，select将监听的文件描述符再次拷贝到用户空间，然select后遍历这些文件描述符找到IO可用的文件。下次监控的时候需要再次拷贝这些文件描述符到内核空间。select支持监听的描述符最大数量是1024.</p>
+<h4 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h4><p>poll使用链表保存文件描述符，其他的跟select没有什么不同。</p>
+<h4 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h4><p>epoll将文件描述符拷贝到内核空间后使用红黑树进行维护，同时向内核注册每个文件描述符的回调函数，当某个文件描述符可读可写的时候，将这个文件描述符加入到就绪链表里，并唤起进程，返回就绪链表到用户空间。</p>
+<ul>
+<li><p><strong>ET和LT</strong></p>
+<ol>
+<li><p>ET边缘触发模式：在这种模式下，只有当描述符从未就绪变成就绪时，内核才会通过epoll进行通知。然后直到下一次变成就绪之前，不会再次重复通知。也就是说，如果一次就绪通知之后不对这个描述符进行IO操作导致它变成未就绪，内核也不会再次发送就绪通知。优点就是只通知一次，减少内核资源浪费，效率高。缺点就是不能保证数据的完整，有些数据来不及读可能就会无法取出。</p>
+</li>
+<li><p>LT边缘触发模式：在这个模式下，如果文件描述符IO就绪，内核就会进行通知，如果不对它进行IO操作，只要还有未操作的数据，内核都会一直进行通知。优点就是可以确保数据可以完整输出。缺点就是由于内核会一直通知，会不停从内核空间切换到用户空间，资源浪费严重。</p>
+</li>
+<li><p>EPOLLONESHOT:即使我们使用ET模式，一个socket上的某个事件还是可能被触发多次。这在并发程序中就会引起一个问题。比如一个线程（或进程，下同）在读取完某个socket上的数据后开始处理这些数据，而在数据的处理过程中该socket上又有新数据可读（EPOLLIN再次被触发），此时另外一个线程被唤醒来读取这些新的数据，于是就出现了两个线程同时操作一个 socket的局面。</p>
+<p>对于注册了EPOLLONESHOT事件的文件描述符，操作系统最多触发其上注册的一个可读、可写或者异常事件，且只触发一次，除非我们使用epoll_ctl函数置该文件描述符上注册的EPOLLONESHOT事件。这样，当一个线程在处理某个socket时，其他线程是不可能有机会操作该socket的。但反过来思考，注册了EPOLLONESHOT事件的socket—旦被某个线程处理完毕，该线程就应该立即重置这个socket上的EPOLLONESHOT事件，以确保这个 socket下一次可读时，其EPOLLIN事件能被触发，进而让其他工作线程有机会继续处理这个socket。</p>
+</li>
+</ol>
+</li>
+<li><p><strong>工作原理</strong></p>
+<p>epoll将文件描述符拷贝到内核空间后使用红黑树进行维护，同时向内核注册每个文件描述符的回调函数，当某个文件描述符可读可写的时候，将这个文件描述符加入到就绪链表里，并唤起进程，返回就绪链表到用户空间，由用户程序进行处理。</p>
+<p>Epoll有三个系统调用：epoll_create(),epoll_ctl()和epoll_wait()。</p>
+<ul>
+<li>eoll_create()函数在内核中初始化一个eventpoll对象，同时初始化红黑树和就绪链表。</li>
+<li>epoll_ctl()用来对监听的文件描述符进行管理。将文件描述符插入红黑树，或者从红黑树中删除，这个过程的时间复杂度是log(N)。同时向内核注册文件描述符的回调函数。</li>
+<li>epoll_wait()会将进程放到eventpoll的等待队列中，将进程阻塞，当某个文件描述符IO可用时，内核通过回调函数将该文件描述符放到就绪链表里，epoll_wait()会将就绪链表里的文件描述符返回到用户空间。</li>
+</ul>
+</li>
+</ul>
+<h4 id="三种工作方式对比"><a href="#三种工作方式对比" class="headerlink" title="三种工作方式对比"></a>三种工作方式对比</h4><ul>
+<li>对于select和poll来说，所有文件描述符都是在用户态被加入其文件描述符集合的，<strong>每次调用都需要将整个集合拷贝到内核态</strong>；epoll则将整个文件描述符集合维护在内核态，每次添加文件描述符的时候都需要<strong>执行一个系统调用</strong>。系统调用的开销是很大的，而且在有很多短期活跃连接的情况下，epoll可能会慢于select和poll由于这些大量的系统调用开销。</li>
+<li>select使用线性表描述文件描述符集合，<strong>文件描述符有上限</strong>；poll使用<strong>链表来描述</strong>；epoll底层通过红黑树来描述，并且维护一个ready list，将事件表中已经就绪的事件添加到这里，在使用epoll_wait调用时，仅观察这个list中有没有数据即可。</li>
+<li>select和poll的最大开销来自内核判断是否有文件描述符就绪这一过程：每次执行select或poll调用时，<strong>它们会采用遍历的方式</strong>，遍历整个文件描述符集合去判断各个文件描述符是否有活动；epoll则不需要去以这种方式检查，当有活动产生时，<strong>会自动触发epoll回调函数通知epoll文件描述符</strong>，然后内核将这些就绪的文件描述符放到之前提到的<strong>ready list中等待epoll_wait调用后被处理</strong>。</li>
+<li>select和poll都只能工作在<strong>相对低效的LT模式下</strong>，而epoll同时支持LT和ET模式。</li>
+<li>综上，<strong>当监测的fd数量较小</strong>，且各个fd都很活跃的情况下，建议使用select和poll；<strong>当监听的fd数量较多</strong>，且单位时间仅部分fd活跃的情况下，使用epoll会明显提升性能。</li>
+</ul>
+<h3 id="五、线程池"><a href="#五、线程池" class="headerlink" title="五、线程池"></a>五、线程池</h3><h4 id="线程同步机制"><a href="#线程同步机制" class="headerlink" title="线程同步机制"></a>线程同步机制</h4><ul>
+<li><h5 id="RAII"><a href="#RAII" class="headerlink" title="RAII"></a>RAII</h5></li>
+</ul>
+<p>RAII全称“Resource Acquisition is Initialization”，即“资源获取即初始化</p>
+<p>RAII核心思想：将资源或者状态与对象的生命周期绑定，通过C++的语言机制（构造函数申请资源，析构函数释放资源），实现资源或状态的安全管理，智能指针是RAII的一种。</p>
+<ul>
+<li><h5 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a>信号量</h5></li>
+</ul>
+<p>一个线程完成了某个动作就通过信号量通知别的线程，别的线程再进行某些动作。</p>
+<p>信号量只能取自然数，有两种操作：等待（<strong>P</strong>）和信号（<strong>V</strong>）。假设有信号量SV，</p>
+<p>P，如果SV &gt; 0，将其减1；若SV值为0，则执行挂起操作</p>
+<p>V，如果有其他操作因为等待SV而挂起，则唤醒，若没有，则将SV值加1</p>
+<ul>
+<li><h5 id="互斥量（互斥锁）"><a href="#互斥量（互斥锁）" class="headerlink" title="互斥量（互斥锁）"></a>互斥量（互斥锁）</h5></li>
+</ul>
+<p>互斥量，可以保护关键代码段，以确保线程或者进程独占式访问。当进入关键代码段，获得互斥锁将其枷锁；离开关键代码段，唤醒等待该互斥锁的线程。</p>
+<ul>
+<li><h5 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h5></li>
+</ul>
+<p>条件变量提供了一种线程间的通知机制，当共享数据达到某个值时，唤醒等待这个共享数据的线程。</p>
+<h4 id="线程池中工作线程的状态"><a href="#线程池中工作线程的状态" class="headerlink" title="线程池中工作线程的状态"></a>线程池中工作线程的状态</h4><ul>
+<li>一直等待新的任务唤醒</li>
+</ul>
+<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><ul>
+<li><h5 id="预防死锁"><a href="#预防死锁" class="headerlink" title="预防死锁"></a>预防死锁</h5></li>
+</ul>
+<p>死锁产生必须满足四个必要条件，互斥条件、不剥夺条件、请求和保持条件、循环等待条件。</p>
+<ol>
+<li>破坏互斥条件<ul>
+<li>互斥条件：只有对必须互斥使用的资源的争抢才会导致死锁</li>
+<li>解决办法：将临界资源改为可共享使用的资源</li>
+<li>缺点：一般情况下，为了系统安全，必须保持这种互斥性，可行性不高</li>
+</ul>
+</li>
+<li>破坏不剥夺条件<ul>
+<li>不剥夺条件：进程所获得的资源在未使用之前，不能由其他进程强行夺走，只能主动释放</li>
+<li>解决办法：申请的资源得不到满足时，立即释放拥有的所有资源；申请的资源被其他进程占用，考虑优先级由操作系统剥夺资源</li>
+</ul>
+</li>
+<li>破坏请求和保持条件<ul>
+<li>请求和保持条件：进程已经保持至少一个资源，且又提出新的资源请求，而该资源又被其他进程占有，此时请求进程被阻塞，但又对已有的资源保持不放。</li>
+<li>解决办法：进程在运行前，就一次分配所有需要的资源。资源未满足前不能运行，运行后这些资源就一直归它所有。</li>
+</ul>
+</li>
+<li>破坏等待条件<ul>
+<li>循环等待条件：存在进程资源的循环等待链，链中每一个进程已获得的资源同时被下一个进程所请求。</li>
+<li>解决办法：给系统中的资源编号，规定每一个进程必须按编号递增的顺序请求资源，编号相同的资源一次性申请完。</li>
+</ul>
+</li>
+</ol>
+<h3 id="六、日志系统"><a href="#六、日志系统" class="headerlink" title="六、日志系统"></a>六、日志系统</h3><h4 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h4><p>1、概念：单例模式是指在整个系统生命周期内，保证一个类只能产生一个实例，确保该类的唯一性。</p>
+<p>2、实现思路：</p>
+<p>​	（1）私有化该类的构造函数和析构函数，以防止外界创建单例类的对象。</p>
+<p>​	（2）拷贝构造函数和赋值构造函数为私有或者删除，目的是禁止外部拷贝和赋值，确保实例的唯一性。</p>
+<p>​	（3）使用类的私有静态指针变量指向该类的唯一实例</p>
+<p>​	（4）通过一个公有静态方法获取该实例</p>
+<p>3、实现方式：</p>
+<p>​	（1）懒汉模式：在第一次使用该对象时进行初始化</p>
+<p>​	（2）饿汉模式：在程序运行时立即初始化</p>
+<h4 id="生产者-消费者模型"><a href="#生产者-消费者模型" class="headerlink" title="生产者-消费者模型"></a>生产者-消费者模型</h4><p>1、概念：</p>
+<p>（1）若干个生产者线程，产生任务放入任务队列中，任务队列满了就阻塞，不满就工作。</p>
+<p>（2）若干个消费者线程，从任务队列中取出任务，任务队列有有任务就工作，没有任务就阻塞。</p>
+<p>（3）生产者和消费者是互斥关系，两者对任务队列的访问互斥</p>
+<p>（4）同时消费者和生产者又是一个相互协作与同步的关系，只有生产者生产之后，消费者才能消费。</p>
+<p><img src="https://pic4.zhimg.com/v2-cb47f33c3a2e5e3091013b945cf661c3_r.jpg" alt="img"></p>
+<h4 id="同步日志"><a href="#同步日志" class="headerlink" title="同步日志"></a>同步日志</h4><p>日志写入函数与工作线程串行执行，由于涉及到IO操作，当单条日志比较大的时候，同步模式会阻塞整个处理流程，服务器的并发能力下降。</p>
+<h4 id="异步日志"><a href="#异步日志" class="headerlink" title="异步日志"></a>异步日志</h4><p>将所写的日志内容先存入阻塞队列，写线程从阻塞队列中取出内容，写入日志。</p>
+<p>五、日志类定义</p>
+<p>通过静态局部变量的懒汉模式创建日志实例，对其进行初始化生成日志文件后，格式化输出内容，并根据不同的写入方式，完成对应逻辑，写入日志文件。</p>
+<p>生成日志文件&amp;&amp;判断写入方式</p>
+<p>日志分级与分文件</p>
+<h3 id="七、数据库连接池"><a href="#七、数据库连接池" class="headerlink" title="七、数据库连接池"></a>七、数据库连接池</h3><h4 id="为什么要使用数据库连接池"><a href="#为什么要使用数据库连接池" class="headerlink" title="为什么要使用数据库连接池"></a>为什么要使用数据库连接池</h4><p>（1）由于服务器需要频繁地访问数据库，即需要频繁创建和断开数据库连接，该过程是一个很耗时的操作，也会对数据库造成安全隐患。</p>
+<p>（2）在程序初始化时候，集中创建并管理多个数据库连接，可以保证较快的数据库读写速度，更加安全可靠。</p>
+<h4 id="什么是数据库连接池"><a href="#什么是数据库连接池" class="headerlink" title="什么是数据库连接池"></a>什么是数据库连接池</h4><p>（1）池是一组资源的集合，这组资源在服务器启动之初就被完全创建好并初始化。通俗来说，池是资源的容器，本质上是对资源的复用。</p>
+<p>（2）连接池中的资源为一组数据库连接，由程序动态地对池中的连接进行使用、释放。</p>
+<p>（3）当系统开始处理客户请求的时候，如果它需要相关的资源，可以直接从池中获取，无需动态分配；当服务器处理完一个客户连接后，可以把相关的资源放回池中，无需执行系统调用释放资源。</p>
+<h4 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h4><p>（1）池可以看作资源的容器，所以有多种实现方法，比如数组、链表、队列等。这里使用单例模式和链表创建数据库连接池，实现对数据库连接资源的复用。</p>
+<p>（2）项目中数据库模块分为两个部分，其一是数据库连接池的定义，其二是利用连接池完成登录和注册的校验功能。具体的，工作线程从数据库连接池取得一个连接，访问数据库中的数据，访问完毕后将连接交还给连接池。</p>
+<h3 id="八、定时器"><a href="#八、定时器" class="headerlink" title="八、定时器"></a>八、定时器</h3><h4 id="原理解析"><a href="#原理解析" class="headerlink" title="原理解析"></a>原理解析</h4><ul>
+<li><p>非活跃，是指客户端（这里是浏览器）与服务器端建立连接后，长时间不交换数据，一直占用服务器端的文件描述符，导致连接资源的浪费。</p>
+</li>
+<li><p>定时事件，是指固定一段时间之后触发某段代码，由该段代码处理一个事件，如从内核事件表删除事件，并关闭文件描述符，释放连接资源。</p>
+</li>
+<li><p>定时器，是指利用结构体或其他形式，将多种定时事件进行封装起来。具体的，这里只涉及一种定时事件，即定期检测非活跃连接，这里将该定时事件与连接资源封装为一个结构体定时器。</p>
+</li>
+<li><p>定时器容器，是指使用某种容器类数据结构，将上述多个定时器组合起来，便于对定时事件统一管理。具体的，项目中使用升序链表将所有定时器串联组织起来。</p>
+</li>
+</ul>
+<h4 id="具体流程"><a href="#具体流程" class="headerlink" title="具体流程"></a>具体流程</h4><ul>
+<li><p>服务器首先创建定时器容器链表，然后用统一事件源将异常事件，读写事件和信号事件统一处理，根据不同事件的对应逻辑使用定时器。</p>
+</li>
+<li><p>具体的，浏览器与服务器连接时，创建该连接对应的定时器，并将该定时器添加到定时器容器链表上；</p>
+</li>
+<li><p>处理异常事件时，执行定时事件，服务器关闭连接，从链表上移除对应定时器；</p>
+</li>
+<li><p>处理定时信号时，将定时标志设置为true，以便执行定时器处理函数；</p>
+</li>
+<li><p>处理读&#x2F;写事件时，若某连接上发生读事件或某连接给浏览器发送数据，将对应定时器向后移动，否则，执行定时事件。</p>
+</li>
+</ul>
+<h3 id="九、RAII机制"><a href="#九、RAII机制" class="headerlink" title="九、RAII机制"></a>九、RAII机制</h3><p>（1）C++语言机制保证，当一个对象创建时会自动调用构造函数，当对象超出作用域时会自动调用析构函数。</p>
+<p>（2）所以，我们可以使用类来管理资源，在构造函数中申请分配资源，在析构函数中释放资源。</p>
+<p>（3）RAII的核心思想是将资源与对象的生命周期绑定。</p>
+<h3 id="十、HTTP"><a href="#十、HTTP" class="headerlink" title="十、HTTP"></a>十、HTTP</h3><h4 id="HTTP报文"><a href="#HTTP报文" class="headerlink" title="HTTP报文"></a>HTTP报文</h4><ul>
+<li>请求报文&#x3D;请求行（request line）、请求头部（header）、空行和请求数据</li>
+<li>响应报文&#x3D;状态行+消息报头+空行+响应正文四个部分组成</li>
+</ul>
+<h4 id="HTTP处理流程"><a href="#HTTP处理流程" class="headerlink" title="HTTP处理流程"></a>HTTP处理流程</h4><ul>
+<li>连接处理：浏览器端发出http连接请求，主线程创建http对象接收请求并将所有数据读入对应buffer，将该对象插入任务队列，等待工作线程从任务队列中取出一个任务进行处理。</li>
+<li>处理报文请求：工作线程取出任务后，调用进程处理函数，通过主、从状态机对请求报文进行解析。</li>
+<li>返回响应报文：解析完之后，生成响应报文，返回给浏览器端。</li>
+</ul>
+<h4 id="HTTP状态机"><a href="#HTTP状态机" class="headerlink" title="HTTP状态机"></a>HTTP状态机</h4><ul>
+<li><p>从状态机负责读取报文的一行（对其中的\r\n修改为\0\0），主状态机负责对该行数据进行解析，主状态机内部调用从状态机，从状态机驱动主状态机。</p>
+</li>
+<li><p>通过switch-case来体现主状态机的选择，主状态机由CHECK_STATE_REQUESTLINE</p>
+<p>CHECK_REQUESTHEADER CHECK_REQUEST_CONTENT三个状态组成，用这三个状态来表示：正在解析请求行、请求头、请求消息体</p>
+</li>
+<li><p>先分析从状态机，从状态机用于处理一行信息（即parse_line函数）。其中包括三个状态：LINE_OPEN, LINE_OK，LINE_BAD，转移过程如下所示：</p>
+<p>当从状态机parse_line读到完整的一行，就可以将改行内容递交给process_read函数中的主状态机处理。</p>
+<p>主状态机也有三种状态表示正在分析请求行（CHECK_STATE_REQUESTINE）,正在分析头部字段（CHECK_STATE_HEADER），和正在分析内容（CHECK_CONTENT）。</p>
+<p>主状态机使用checkstate变量来记录当前的状态。</p>
+<p>如果当前的状态是CHECK_STATE_REQUESTLINE，则表示parse_line函数解析出的行是请求行，于是主状态机调用parse_requestline来分析请求行；</p>
+<p>如果当前的状态是CHECK_STATE_HEADER，则表示parse_line函数解析出来的是头部字段，于是主状态机调用parse_header来分析头部字段。</p>
+<p>如果当前状态是CHECK_CONTENT，则表示parse_line函数解析出来的是消息体，我们调用parse_content来分析消息体（实际上实现时候并没有分析，只是判断是否完整读入）</p>
+<p>checkstate变量的初始值是CHECK_STATE_REQUESTLINE，调用相应的函数（parse_requestline，parse_header）后更新checkstate实现状态转移。</p>
+</li>
+</ul>
+<h2 id="项目学习"><a href="#项目学习" class="headerlink" title="项目学习"></a>项目学习</h2><h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>对于本文项目，主要为了学习web服务器相关知识，不需要全部了解，但是大部分代码都要理清思路，采用以下方式学习：</p>
+<ul>
+<li>代码架构：每一个目录负责什么模块（可以结合开源项目的文档，加快对项目的理解）</li>
+<li>编译运行：看看有哪些功能</li>
+<li>挑出一个功能，细究其代码实现，再考虑其他功能。</li>
+<li>添加功能，如何在现有的框架下增加一个功能，比如上传文件，上传博客等等</li>
+</ul>
+<h4 id="代码架构"><a href="#代码架构" class="headerlink" title="代码架构"></a>代码架构</h4><ul>
+<li>CGImysql：CGI校验程序，负责用户数据与数据库对比</li>
+<li>http：实现http协议连接、解析http协议、销毁等</li>
+<li>lock：封装互斥锁、信号量、条件变量等</li>
+<li>log：日志系统的实现</li>
+<li>root：静态网页数据、图片、视频等</li>
+<li>threadpool：线程池的实现</li>
+<li>timer：定时器的实现</li>
+<li>主函数、编译文件等</li>
+</ul>
+<h4 id="什么是webserver"><a href="#什么是webserver" class="headerlink" title="什么是webserver"></a>什么是webserver</h4><p>一个Web Server就是一个服务器软件（程序）。其主要功能是通过HTTP协议与客户端（通常是浏览器（Browser））进行通信，来接收，存储，处理来自客户端的HTTP请求，并对其请求做出HTTP响应，返回给客户端其请求的内容（文件、网页等）或返回一个Error信息。</p>
+<h4 id="用户如何与你的Web服务器进行通信"><a href="#用户如何与你的Web服务器进行通信" class="headerlink" title="用户如何与你的Web服务器进行通信"></a>用户如何与你的Web服务器进行通信</h4><p>通常用户使用Web浏览器与服务器进行通信。在浏览器中键入“域名”或“IP地址:端口号”，浏览器则先将你的域名解析成相应的IP地址或者直接根据你的IP地址向对应的Web服务器发送一个HTTP请求。这一过程首先要通过TCP协议的三次握手建立与目标Web服务器的连接，然后HTTP协议生成针对目标Web服务器的HTTP请求报文，通过TCP、IP等协议发送到目标Web服务器上。</p>
+<h4 id="Web服务器如何接收客户端发来的HTTP请求报文呢"><a href="#Web服务器如何接收客户端发来的HTTP请求报文呢" class="headerlink" title="Web服务器如何接收客户端发来的HTTP请求报文呢?"></a>Web服务器如何接收客户端发来的HTTP请求报文呢?</h4><p>Web服务器端通过socket监听来自用户的请求。</p>
+<p>服务器通过epoll这种I&#x2F;O复用技术（还有select和poll）来实现对监听socket（<code>listenfd</code>）和连接socket（客户请求）的同时监听。注意I&#x2F;O复用虽然可以同时监听多个文件描述符，但是它本身是阻塞的，并且当有多个文件描述符同时就绪的时候，如果不采取额外措施，程序则只能按顺序处理其中就绪的每一个文件描述符，所以为提高效率，我们将在这部分通过线程池来实现并发（多线程并发），为每个就绪的文件描述符分配一个逻辑单元（线程）来处理。</p>
+<h4 id="Web服务器如何处理以及响应接收到的HTTP请求报文呢"><a href="#Web服务器如何处理以及响应接收到的HTTP请求报文呢" class="headerlink" title="Web服务器如何处理以及响应接收到的HTTP请求报文呢?"></a>Web服务器如何处理以及响应接收到的HTTP请求报文呢?</h4><p>该项目使用线程池（半同步半反应堆模式）并发处理用户请求，主线程负责读写，工作线程（线程池中的线程）负责处理逻辑（HTTP请求报文的解析等等）</p>
+<h4 id="数据库连接池是如何运行的"><a href="#数据库连接池是如何运行的" class="headerlink" title="数据库连接池是如何运行的"></a>数据库连接池是如何运行的</h4><p>若每次用户请求我们都需要新建一个数据库连接，请求结束后我们释放该数据库连接，当用户请求连接过多时，这种做法过于低效，所以类似<strong>线程池</strong>的做法，我们构建一个数据库连接池，预先生成一些数据库连接放在那里供用户请求使用。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h3 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a>线程池</h3><h4 id="线程的同步机制有哪些？"><a href="#线程的同步机制有哪些？" class="headerlink" title="线程的同步机制有哪些？"></a>线程的同步机制有哪些？</h4><ul>
+<li>信号量、条件变量、互斥量等；</li>
+</ul>
+<h4 id="为什么要使用线程池？"><a href="#为什么要使用线程池？" class="headerlink" title="为什么要使用线程池？"></a>为什么要使用线程池？</h4><p>当你需要限制你应用程序中同时运行的线程数时，线程池非常有用。因为启动一个新线程会带来性能开销，每个线程也会为其堆栈分配一些内存等。为了任务的并发执行，我们可以将这些任务任务传递到线程池，而不是为每个任务动态开启一个新的线程。</p>
+<h4 id="线程池中的工作线程是一直等待吗？"><a href="#线程池中的工作线程是一直等待吗？" class="headerlink" title="线程池中的工作线程是一直等待吗？"></a>线程池中的工作线程是一直等待吗？</h4><ul>
+<li>是的，等待新任务的唤醒；</li>
+</ul>
+<h4 id="你的线程池工作线程处理完一个任务后的状态是什么？"><a href="#你的线程池工作线程处理完一个任务后的状态是什么？" class="headerlink" title="你的线程池工作线程处理完一个任务后的状态是什么？"></a>你的线程池工作线程处理完一个任务后的状态是什么？</h4><ul>
+<li>如果请求队列为空，则该线程进入线程池中等待；若不为空，则该线程跟其他线程一起进行任务的竞争；</li>
+</ul>
+<h4 id="如果同时1000个客户端进行访问请求，线程数不多，怎么能及时响应处理每一个呢？"><a href="#如果同时1000个客户端进行访问请求，线程数不多，怎么能及时响应处理每一个呢？" class="headerlink" title="如果同时1000个客户端进行访问请求，线程数不多，怎么能及时响应处理每一个呢？"></a>如果同时1000个客户端进行访问请求，线程数不多，怎么能及时响应处理每一个呢？</h4><ul>
+<li>该项目是基于IO复用的并发模式。需要注意的是，不是一个客户连接就对应一个线程！当客户连接有事件需要处理的时，epoll会进行事件提醒，将对应的任务加入请求队列，等待工作线程竞争执行。如果速度还是慢，那就只能够增大线程池容量，或者考虑集群分布式的做法。</li>
+</ul>
+<h4 id="如果一个客户请求需要占用线程很久的时间，会不会影响接下来的客户请求呢，有什么好的策略呢"><a href="#如果一个客户请求需要占用线程很久的时间，会不会影响接下来的客户请求呢，有什么好的策略呢" class="headerlink" title="如果一个客户请求需要占用线程很久的时间，会不会影响接下来的客户请求呢，有什么好的策略呢?"></a>如果一个客户请求需要占用线程很久的时间，会不会影响接下来的客户请求呢，有什么好的策略呢?</h4><ul>
+<li>会，因为线程的数量是固定的，如果一个客户请求长时间占用着线程资源，势必会影响到服务器对外的整体响应速度。解决的策略可以是给每一个线程处理任务设定一个时间阈值，当某一个客户请求时间过长，则将其置于任务请求最后，或断开连接。</li>
+</ul>
+<h4 id="线程池怎么实现？"><a href="#线程池怎么实现？" class="headerlink" title="线程池怎么实现？"></a>线程池怎么实现？</h4><p>程序采用c++编写，要自己封装一个简易的线程池类。大致思路是创建固定数目的线程（如跟核数相同），然后类内部维护一个生产者—消费者队列。</p>
+<p>提供相应的添加任务（生产者）和执行任务接口（消费者）。按照操作系统书中典型的生产者—消费者模型维护增减队列任务（使用mutex和semaphore）。</p>
+<p>mutex用于互斥，保证任意时刻只有一个线程读写队列，semaphore用于同步，保证执行顺序（队列为空时不要读，队列满了不要写）。</p>
+<h3 id="定时器"><a href="#定时器" class="headerlink" title="定时器"></a>定时器</h3><h4 id="为什么要用定时器？"><a href="#为什么要用定时器？" class="headerlink" title="为什么要用定时器？"></a>为什么要用定时器？</h4><p>——处理定时任务，或者非活跃连接，节省系统资源；</p>
+<h4 id="说一下定时器的工作原理？"><a href="#说一下定时器的工作原理？" class="headerlink" title="说一下定时器的工作原理？"></a>说一下定时器的工作原理？</h4><p>——服务器就为各事件分配一个定时器。该项目使用SIGALRM信号来实现定时器，首先每一个定时事件都处于一个升序链表上，通过alarm()函数周期性触发SIGALRM信号，而后信号回调函数利用管道通知主循环，主循环接收到信号之后对升序链表上的定时器进行处理：若一定时间内无数据交换则关闭连接。</p>
+<h4 id="双向链表，删除和添加的时间复杂度说一下？还可以优化吗？"><a href="#双向链表，删除和添加的时间复杂度说一下？还可以优化吗？" class="headerlink" title="双向链表，删除和添加的时间复杂度说一下？还可以优化吗？"></a>双向链表，删除和添加的时间复杂度说一下？还可以优化吗？</h4><p>添加一般情况下都是O(N)，删除只需要O(1)。从双向链表的方式优化不太现实，可以考虑使用最小堆、或者跳表的数据结构，<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/360087451">跳表详见</a>。</p>
+<h4 id="最小堆优化？说一下时间复杂度和工作原理"><a href="#最小堆优化？说一下时间复杂度和工作原理" class="headerlink" title="最小堆优化？说一下时间复杂度和工作原理"></a>最小堆优化？说一下时间复杂度和工作原理</h4><p>最小堆以每个定时器的过期时间进行排序，最小的定时器位于堆顶，当SIGALRM信号触发tick()函数时执行过期定时器清除，如果堆顶的定时器时间过期，则删除，并重新建堆，再判定是否过期，如此循环直到未过期为止。</p>
+<p>插入，O(logN)；</p>
+<p>删除，O(logN)；</p>
+<h3 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h3><h4 id="说下你的日志系统的运行机制？"><a href="#说下你的日志系统的运行机制？" class="headerlink" title="说下你的日志系统的运行机制？"></a>说下你的日志系统的运行机制？</h4><p>——初始化服务器时，利用单例模式初始化日志系统，根据配置文件确认是同步还是异步写入的方式。</p>
+<h4 id="为什么要异步？和同步的区别是什么？"><a href="#为什么要异步？和同步的区别是什么？" class="headerlink" title="为什么要异步？和同步的区别是什么？"></a>为什么要异步？和同步的区别是什么？</h4><p>——同步方式写入日志时会产生比较多的系统调用，若是某条日志信息过大，会阻塞日志系统，造成系统瓶颈。异步方式采用生产者-消费者模型，具有较高的并发能力。</p>
+<h3 id="压力测试"><a href="#压力测试" class="headerlink" title="压力测试"></a>压力测试</h3><h4 id="服务器并发量测试过吗？怎么测试的？"><a href="#服务器并发量测试过吗？怎么测试的？" class="headerlink" title="服务器并发量测试过吗？怎么测试的？"></a>服务器并发量测试过吗？怎么测试的？</h4><p>——测试过，利用webbench，至少满足万余的并发量。</p>
+<h4 id="webbench是什么？介绍一下原理"><a href="#webbench是什么？介绍一下原理" class="headerlink" title="webbench是什么？介绍一下原理"></a>webbench是什么？介绍一下原理</h4><p>——是一款轻量级的网址压力测试工具，可以实现高达3万的并发测试。其原理：Webbench实现的核心原理是：父进程fork若干个子进程，每个子进程在用户要求时间或默认的时间内对目标web循环发出实际访问请求，父子进程通过管道进行通信，子进程通过管道写端向父进程传递在若干次请求访问完毕后记录到的总信息，父进程通过管道读端读取子进程发来的相关信息，子进程在时间到后结束，父进程在所有子进程退出后统计并给用户显示最后的测试结果，然后退出。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2023/04/09/webserver/" title="webserver" target="_blank" rel="external">http://example.com/2023/04/09/webserver/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Hexiangkun" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Hexiangkun" target="_blank"><span class="text-dark">HXK</span><small class="ml-1x"></small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2023/04/09/%E8%AE%A1%E7%BD%91/" title="(no title)"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.png" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.png" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="hhttps://github.com/Hexiangkun" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

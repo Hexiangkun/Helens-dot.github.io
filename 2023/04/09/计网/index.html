@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Hexo</title>
+  <meta name="description" content="title: 计网date: 2023-04-09 13:13:21tags: socket网络编程的系统调用12345678socket()    创建套接字   bind()      绑定本机端口    connect()   建立连接     （TCP三次握手在调用这个函数时进行）listen()    监听端口accept()    接受连接recv(), read(), recvfro">
+<meta property="og:type" content="article">
+<meta property="og:title" content="何相昆">
+<meta property="og:url" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/index.html">
+<meta property="og:site_name" content="何相昆">
+<meta property="og:description" content="title: 计网date: 2023-04-09 13:13:21tags: socket网络编程的系统调用12345678socket()    创建套接字   bind()      绑定本机端口    connect()   建立连接     （TCP三次握手在调用这个函数时进行）listen()    监听端口accept()    接受连接recv(), read(), recvfro">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/IP%E6%95%B0%E6%8D%AE%E6%8A%A5%E6%A0%BC%E5%BC%8F.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/ICMP%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/3.webp">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/4.webp">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E6%8A%A5%E6%96%87.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E9%A6%96%E9%83%A8.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/UDP%E6%8A%A5%E6%96%87.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/UDP%E9%A6%96%E9%83%A8.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/%E5%88%A9%E7%94%A8%E5%8F%AF%E5%8F%98%E7%AA%97%E5%8F%A3%E8%BF%9B%E8%A1%8C%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6%E4%B8%BE%E4%BE%8B.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E6%8B%A5%E5%A1%9E%E7%AA%97%E5%8F%A3cwnd%E5%9C%A8%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E6%97%B6%E7%9A%84%E5%8F%98%E5%8C%96%E6%83%85%E5%86%B5.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/%E5%BF%AB%E9%87%8D%E4%BC%A0%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E9%87%8A%E6%94%BE%E8%BF%9E%E6%8E%A5.png">
+<meta property="og:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E7%9A%84%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA.png">
+<meta property="article:published_time" content="2023-04-09T05:13:21.872Z">
+<meta property="article:modified_time" content="2023-04-09T05:34:58.702Z">
+<meta property="article:author" content="hexiangkun">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/IP%E6%95%B0%E6%8D%AE%E6%8A%A5%E6%A0%BC%E5%BC%8F.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="何相昆" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Hexiangkun" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">HXK</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md"></h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Suzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="hhttps://github.com/Hexiangkun" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C/">C++</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/HCI/">HCI</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%8E%92%E5%BA%8F/">排序</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HCI/" rel="tag">HCI</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/" rel="tag">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%92%E5%BA%8F/" rel="tag">排序</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/C/" style="font-size: 13px;">C++</a> <a href="/tags/HCI/" style="font-size: 14px;">HCI</a> <a href="/tags/git/" style="font-size: 13px;">git</a> <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 13px;">排序</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/webserver/" class="title">webserver</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:15:31.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/%E8%AE%A1%E7%BD%91/" class="title">(no title)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:13:21.872Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%8E%92%E5%BA%8F/">排序</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/%E6%8E%92%E5%BA%8F/" class="title">排序</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:12:01.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/git/">git</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/git%E6%A6%82%E8%BF%B0/" class="title">git概述</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T05:05:58.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/04/09/C++%E5%9F%BA%E7%A1%80/" class="title">C++基础</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-04-09T04:44:09.000Z" itemprop="datePublished">2023-04-09</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-计网" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/04/09/%E8%AE%A1%E7%BD%91/" class="article-date">
+	  <time datetime="2023-04-09T05:13:21.872Z" itemprop="datePublished">2023-04-09</time>
+	</a>
+</span>
+        
+        
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/04/09/%E8%AE%A1%E7%BD%91/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>title: 计网<br>date: 2023-04-09 13:13:21<br>tags:</p>
+<h3 id="socket网络编程的系统调用"><a href="#socket网络编程的系统调用" class="headerlink" title="socket网络编程的系统调用"></a>socket网络编程的系统调用</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">socket()    创建套接字   </span><br><span class="line">bind()      绑定本机端口    </span><br><span class="line">connect()   建立连接     （TCP三次握手在调用这个函数时进行）</span><br><span class="line">listen()    监听端口</span><br><span class="line">accept()    接受连接</span><br><span class="line">recv(), read(), recvfrom()  数据接收</span><br><span class="line">send(), write(), sendto()   数据发送</span><br><span class="line">close(), shutdown() 关闭套接字</span><br></pre></td></tr></table></figure>
+
+<h3 id="close函数-半关闭状态"><a href="#close函数-半关闭状态" class="headerlink" title="close函数-半关闭状态"></a>close函数-半关闭状态</h3><ul>
+<li>close并不是一次就能直接关闭，调用close只能将套接字的引用计数减1，可能其他进程还在使用这个套接字，所以并不是直接关闭。只有当套接字的引用计数为0的时候才会终止连接。</li>
+<li>使用shutdown可以直接关闭连接。<ol>
+<li><strong>客户端</strong>：调用shutdown(SHUT_WR) 发送⼀个 FIN 包，并且标记该socket为 SEND_SHUTDOWN；</li>
+<li><strong>服务端</strong>：收到 FIN 包并标记该 socket 为RCV_SHUTDOWN；此时就进入半关闭状态；</li>
+</ol>
+</li>
+<li>同时在TCP协议中，发送关闭请求时，需要对方回复确认请求，否则不能确认，就会造成一个半关闭的状态，这个时候可以接收，不能发送。</li>
+</ul>
+<h3 id="各层作用及协议"><a href="#各层作用及协议" class="headerlink" title="各层作用及协议"></a>各层作用及协议</h3><table>
+<thead>
+<tr>
+<th>分层</th>
+<th>作用</th>
+<th>协议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>物理层</td>
+<td>通过媒介传输比特，确定机械及电气规范（比特 Bit）</td>
+<td>RJ45、CLOCK、IEEE802.3（中继器，集线器）</td>
+</tr>
+<tr>
+<td>数据链路层</td>
+<td>将比特组装成帧和点到点的传递（帧 Frame）</td>
+<td>PPP、FR、HDLC、VLAN、MAC（网桥，交换机）</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>负责数据包从源到宿的传递和网际互连（包 Packet）</td>
+<td>IP、ICMP、ARP、RARP、OSPF、IPX、RIP、IGRP（路由器）</td>
+</tr>
+<tr>
+<td>运输层</td>
+<td>提供端到端的可靠报文传递和错误恢复（ 段Segment）</td>
+<td>TCP、UDP、SPX</td>
+</tr>
+<tr>
+<td>会话层</td>
+<td>建立、管理和终止会话（会话协议数据单元 SPDU）</td>
+<td>NFS、SQL、NETBIOS、RPC</td>
+</tr>
+<tr>
+<td>表示层</td>
+<td>对数据进行翻译、加密和压缩（表示协议数据单元 PPDU）</td>
+<td>JPEG、MPEG、ASII</td>
+</tr>
+<tr>
+<td>应用层</td>
+<td>允许访问OSI环境的手段（应用协议数据单元 APDU）</td>
+<td>FTP、DNS、Telnet、SMTP、HTTP、WWW、NFS</td>
+</tr>
+</tbody></table>
+<p>五层体系结构包括：应用层、传输层、网络层、数据链路层和物理层。</p>
+<p>TCP&#x2F;IP四层模型：应用层、传输层、网络层、数据链路层</p>
+<h3 id="物理层"><a href="#物理层" class="headerlink" title="物理层"></a>物理层</h3><ul>
+<li>传输数据的单位：比特</li>
+<li>数据传输系统：源系统（源点、发送器） –&gt; 传输系统 –&gt; 目的系统（接收器、终点）</li>
+</ul>
+<p>通道：</p>
+<ul>
+<li>单向通道（单工通道）：只有一个方向通信，没有反方向交互，如广播</li>
+<li>双向交替通信（半双工通信）：通信双方都可发消息，但不能同时发送或接收</li>
+<li>双向同时通信（全双工通信）：通信双方可以同时发送和接收信息</li>
+</ul>
+<p>通道复用技术：</p>
+<ul>
+<li>频分复用（FDM，Frequency Division Multiplexing）：不同用户在不同频带，所用用户在同样时间占用不同带宽资源</li>
+<li>时分复用（TDM，Time Division Multiplexing）：不同用户在同一时间段的不同时间片，所有用户在不同时间占用同样的频带宽度</li>
+<li>波分复用（WDM，Wavelength Division Multiplexing）：光的频分复用</li>
+<li>码分复用（CDM，Code Division Multiplexing）：不同用户使用不同的码，可以在同样时间使用同样频带通信</li>
+</ul>
+<h3 id="数据链路层"><a href="#数据链路层" class="headerlink" title="数据链路层"></a>数据链路层</h3><h4 id="1-点对点信道"><a href="#1-点对点信道" class="headerlink" title="1.点对点信道"></a>1.点对点信道</h4><ul>
+<li>数据单元：帧</li>
+</ul>
+<p>三个基本问题：</p>
+<ul>
+<li>封装成帧：把网络层的 IP 数据报封装成帧，<code>SOH - 数据部分 - EOT</code></li>
+<li>透明传输：不管数据部分什么字符，都能传输出去；可以通过字节填充方法解决（冲突字符前加转义字符）</li>
+<li>差错检测：降低误码率（BER，Bit Error Rate），广泛使用循环冗余检测（CRC，Cyclic Redundancy Check）</li>
+</ul>
+<p>点对点协议（Point-to-Point Protocol）：</p>
+<ul>
+<li>点对点协议（Point-to-Point Protocol）：用户计算机和 ISP 通信时所使用的协议</li>
+</ul>
+<h4 id="2-广播信道"><a href="#2-广播信道" class="headerlink" title="2.广播信道"></a>2.广播信道</h4><p>广播通信：</p>
+<ul>
+<li>硬件地址（物理地址、MAC 地址）</li>
+<li>单播（unicast）帧（一对一）：收到的帧的 MAC 地址与本站的硬件地址相同</li>
+<li>广播（broadcast）帧（一对全体）：发送给本局域网上所有站点的帧</li>
+<li>多播（multicast）帧（一对多）：发送给本局域网上一部分站点的帧</li>
+</ul>
+<h3 id="网络层"><a href="#网络层" class="headerlink" title="网络层"></a>网络层</h3><ul>
+<li>IP（Internet Protocol，网际协议）是为计算机网络相互连接进行通信而设计的协议。</li>
+<li>ARP（Address Resolution Protocol，地址解析协议）</li>
+<li>ICMP（Internet Control Message Protocol，网际控制报文协议）</li>
+<li>IGMP（Internet Group Management Protocol，网际组管理协议）</li>
+</ul>
+<h4 id="IP-网际协议"><a href="#IP-网际协议" class="headerlink" title="IP 网际协议"></a>IP 网际协议</h4><p>IP 地址分类：</p>
+<ul>
+<li><code>IP 地址 ::= &#123;&lt;网络号&gt;,&lt;主机号&gt;&#125;</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>IP 地址类别</th>
+<th>网络号</th>
+<th>网络范围</th>
+<th>主机号</th>
+<th>IP 地址范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A 类</td>
+<td>8bit，第一位固定为 0</td>
+<td>0 —— 127</td>
+<td>24bit</td>
+<td>1.0.0.0 —— 127.255.255.255</td>
+</tr>
+<tr>
+<td>B 类</td>
+<td>16bit，前两位固定为  10</td>
+<td>128.0 —— 191.255</td>
+<td>16bit</td>
+<td>128.0.0.0 —— 191.255.255.255</td>
+</tr>
+<tr>
+<td>C  类</td>
+<td>24bit，前三位固定为  110</td>
+<td>192.0.0 —— 223.255.255</td>
+<td>8bit</td>
+<td>192.0.0.0 —— 223.255.255.255</td>
+</tr>
+<tr>
+<td>D  类</td>
+<td>前四位固定为 1110，后面为多播地址</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E  类</td>
+<td>前五位固定为 11110，后面保留为今后所用</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>IP 数据报格式：</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/IP%E6%95%B0%E6%8D%AE%E6%8A%A5%E6%A0%BC%E5%BC%8F.png" class="">
+
+<h4 id="IP地址、MAC地址作用"><a href="#IP地址、MAC地址作用" class="headerlink" title="IP地址、MAC地址作用"></a>IP地址、MAC地址作用</h4><p>MAC地址是一个硬件地址，用来定义网络设备的位置，主要由数据链路层负责。而IP地址是IP协议提供的一种统一的地址格式，为互联网上的每一个网络和每一台主机分配一个逻辑地址，以此来屏蔽物理地址的差异。</p>
+<h4 id="ARP"><a href="#ARP" class="headerlink" title="ARP"></a>ARP</h4><ul>
+<li>ARP协议将IP地址转化为MAC地址</li>
+<li>同网段工作原理<ol>
+<li>每台主机都会在自己的ARP缓冲区中建立一个 ARP列表，以表示IP地址和MAC地址的对应关系。</li>
+<li>当源主机需要将一个数据包要发送到目的主机时，检查自己的 ARP缓存列表中是否存在目标 IP地址对应的MAC地址</li>
+<li>如果有，就直接将数据包发送到这个MAC地址；如果没有，就向本地网段发起一个ARP请求的广播包，查询此目的主机对应的MAC地址。</li>
+<li>此ARP请求数据包里包括源主机的IP地址、硬件地址、以及目的主机的IP地址、硬件地址。</li>
+<li>网络中所有的主机收到这个ARP请求后，会检查数据包中的目的IP是否和自己的IP地址一致。如果不相同就忽略此数据包；如果相同，该主机首先将发送端的MAC地址和IP地址添加到自己的ARP缓存中，如果ARP表中已经存在该IP的信息，则将其覆盖，然后给源主机发送一个 ARP响应数据包，告诉对方自己是它需要查找的MAC地址；</li>
+<li>源主机收到这个ARP响应数据包后，将得到的目的主机的IP地址和MAC地址添加到自己的ARP列表中，并利用此信息开始数据的传输。如果源主机一直没有收到ARP响应数据包，表示ARP查询失败。</li>
+</ol>
+</li>
+<li>不断网段工作原理<ol>
+<li>不同网段的主机通信时，主机会封装网关（通常是路由器）的mac地址，然后主机将数据发送给路由器，后续路由进行路由转发，通过arp解析目标地址的mac地址，然后将数据包送达目的地。</li>
+<li></li>
+</ol>
+</li>
+</ul>
+<h4 id="ICMP-网际控制报文协议"><a href="#ICMP-网际控制报文协议" class="headerlink" title="ICMP 网际控制报文协议"></a>ICMP 网际控制报文协议</h4><p>ICMP 报文格式：</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/ICMP%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F.png" class="">
+
+<p>应用：</p>
+<ul>
+<li>PING（Packet InterNet Groper，分组网间探测）测试两个主机之间的连通性</li>
+<li>TTL（Time To Live，生存时间）该字段指定 IP 包被路由器丢弃之前允许通过的最大网段数量</li>
+</ul>
+<h4 id="DNS的工作过程和原理"><a href="#DNS的工作过程和原理" class="headerlink" title="DNS的工作过程和原理"></a>DNS的工作过程和原理</h4><img src="/2023/04/09/%E8%AE%A1%E7%BD%91/3.webp" class="">
+
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/4.webp" class="">
+<p>DNS解析有两种方式：递归查询和迭代查询</p>
+<ul>
+<li>递归查询 用户先向本地域名服务器查询，如果本地域名服务器的缓存没有IP地址映射记录，就向根域名服务器查询，根域名服务器就会向顶级域名服务器查询，顶级域名服务器向权限域名服务器查询，查到结果后依次返回。</li>
+<li>迭代查询 用户向本地域名服务器查询，如果没有缓存，本地域名服务器会向根域名服务器查询，根域名服务器返回顶级域名服务器的地址，本地域名服务器再向顶级域名服务器查询，得到权限域名服务器的地址，本地域名服务器再向权限域名服务器查询得到结果</li>
+</ul>
+<h4 id="Ping命令"><a href="#Ping命令" class="headerlink" title="Ping命令"></a>Ping命令</h4><p>ping是使用ICMP协议来进行工作的。 ICMP:网络控制报文协议</p>
+<ul>
+<li>首先，ping命令会构建一个ICMP请求数据包，然后由ICMP协议将这个数据包连同目的IP地址源IP地址一起交给IP协议。</li>
+<li>然后IP协议就会构建一个IP数据报，并且在映射表中查找目的IP对应的mac地址，将其交给数据链路层。</li>
+<li>然后数据链路层就会构建一个数据帧，附上源mac地址和目的mac地址发送出去。</li>
+</ul>
+<p>目的主机接收到数据帧后，就会检查包上的mac地址与本机mac是否相符，如果相符，就接收并把其中的信息提取出来交给IP协议，IP协议就会将其中的信息提取出来交给ICMP协议。然后构建一个ICMP应答包，用相同的过程发送回去。</p>
+<h4 id="内部网关协议"><a href="#内部网关协议" class="headerlink" title="内部网关协议"></a>内部网关协议</h4><ul>
+<li>RIP（Routing Information Protocol，路由信息协议）<ol>
+<li>RIP“路由信息协议(Route Information Protocol)”的简写，主要传递路由信息，通过每隔30秒广播一次路由表，维护相邻路由器的位置关系，同时根据收到的路由表信息使用动态规划的方式计算自己的路由表信息。RIP是一个距离矢量路由协议,最大跳数为16跳,16跳以及超过16跳的网络则认为目标网络不可达。</li>
+</ol>
+</li>
+<li>OSPF（Open Sortest Path First，开放最短路径优先）<ol>
+<li>详见：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/41341540">https://zhuanlan.zhihu.com/p/41341540</a></li>
+</ol>
+</li>
+</ul>
+<h4 id="外部网关协议"><a href="#外部网关协议" class="headerlink" title="外部网关协议"></a>外部网关协议</h4><ul>
+<li>BGP（Border Gateway Protocol，边界网关协议）</li>
+</ul>
+<h4 id="IP多播"><a href="#IP多播" class="headerlink" title="IP多播"></a>IP多播</h4><ul>
+<li>IGMP（Internet Group Management Protocol，网际组管理协议）</li>
+<li>多播路由选择协议</li>
+</ul>
+<h4 id="VPN-和-NAT"><a href="#VPN-和-NAT" class="headerlink" title="VPN 和 NAT"></a>VPN 和 NAT</h4><ul>
+<li>VPN（Virtual Private Network，虚拟专用网）</li>
+<li>NAT（Network Address Translation，网络地址转换）</li>
+</ul>
+<h4 id="路由表包含什么？"><a href="#路由表包含什么？" class="headerlink" title="路由表包含什么？"></a>路由表包含什么？</h4><ol>
+<li>网络 ID（Network ID, Network number）：就是目标地址的网络 ID。</li>
+<li>子网掩码（subnet mask）：用来判断 IP 所属网络</li>
+<li>下一跳地址&#x2F;接口（Next hop &#x2F; interface）：就是数据在发送到目标地址的旅途中下一站的地址。其中 interface 指向 next hop（即为下一个 route）。一个自治系统（AS, Autonomous system）中的 route 应该包含区域内所有的子网络，而默认网关（Network id: <code>0.0.0.0</code>, Netmask: <code>0.0.0.0</code>）指向自治系统的出口。</li>
+</ol>
+<p>根据应用和执行的不同，路由表可能含有如下附加信息：</p>
+<ol>
+<li>花费（Cost）：就是数据发送过程中通过路径所需要的花费。</li>
+<li>路由的服务质量</li>
+<li>路由中需要过滤的出&#x2F;入连接列表</li>
+</ol>
+<h4 id="网络层分片的原因与具体实现"><a href="#网络层分片的原因与具体实现" class="headerlink" title="网络层分片的原因与具体实现"></a>网络层分片的原因与具体实现</h4><p>因为在链路层中帧的大小通常都有限制，比如在以太网中帧的最大大小（MTU）就是1500字节。如果IP数据包加上头部后大小超过1500字节，就需要分片。</p>
+<p>IP分片和完整IP报文差不多拥有相同的IP头，16位ID域对于每个分片都是一致的，这样才能在重新组装的时候识别出来自同一个IP报文的分片。在IP头里面，16位识别号唯一记录了一个IP包的ID，具有同一个ID的IP分片将会重新组装；而13位片偏移则记录了某IP片相对整个包的位置；而这两个表中间的3位标志则标志着该分片后面是否还有新的分片。这三个标志就组成了IP分片的所有信息(将在后面介绍)，接受方就可以利用这些信息对IP数据进行重新组织。<br>详见：<a target="_blank" rel="noopener" href="https://blog.csdn.net/gettogetto/article/details/72851734">https://blog.csdn.net/gettogetto/article/details/72851734</a></p>
+<h3 id="运输层"><a href="#运输层" class="headerlink" title="运输层"></a>运输层</h3><p>协议：</p>
+<ul>
+<li>TCP（Transmission Control Protocol，传输控制协议）</li>
+<li>UDP（User Datagram Protocol，用户数据报协议）</li>
+</ul>
+<p>端口：</p>
+<table>
+<thead>
+<tr>
+<th>应用程序</th>
+<th>FTP</th>
+<th>TELNET</th>
+<th>SMTP</th>
+<th>DNS</th>
+<th>TFTP</th>
+<th>HTTP</th>
+<th>HTTPS</th>
+<th>SNMP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>端口号</td>
+<td>21</td>
+<td>23</td>
+<td>25</td>
+<td>53</td>
+<td>69</td>
+<td>80</td>
+<td>443</td>
+<td>161</td>
+</tr>
+</tbody></table>
+<h4 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h4><ul>
+<li>TCP（Transmission Control Protocol，传输控制协议）是一种面向连接的、可靠的、基于字节流的传输层通信协议，其传输的单位是报文段。</li>
+</ul>
+<p><strong>特征</strong></p>
+<ul>
+<li>面向连接</li>
+<li>只能点对点（一对一）通信</li>
+<li>可靠交互</li>
+<li>全双工通信</li>
+<li>面向字节流</li>
+</ul>
+<p><strong>TCP 如何保证可靠传输</strong></p>
+<ul>
+<li><p>确认和超时重传。</p>
+<p>当TCP发出一个段后，它启动一个定时器，等待目的端确认收到这个报文段。如果不能及时收到一个确认，将重发这个报文段。 </p>
+</li>
+<li><p>数据合理分片和排序</p>
+</li>
+<li><p>流量控制</p>
+<p>TCP连接的每一方都有固定大小的缓冲空间，TCP的接收端只允许发送端发送接收端缓冲区能接纳的数据。当接收方来不及处理发送方的数据，能提示发送方降低发送的速率，防止包丢失。滑动窗口协议。</p>
+</li>
+<li><p>拥塞控制</p>
+<p>当网络拥塞时，减少数据的发送。</p>
+</li>
+<li><p>数据校验</p>
+</li>
+</ul>
+<p>TCP 报文结构</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E6%8A%A5%E6%96%87.png" class="">
+
+<p>TCP 首部</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E9%A6%96%E9%83%A8.png" class="">
+
+<p>TCP：状态控制码（Code，Control Flag），占 6 比特，含义如下：</p>
+<ul>
+<li>URG：紧急比特（urgent），当 <code>URG＝1</code> 时，表明紧急指针字段有效，代表该封包为紧急封包。它告诉系统此报文段中有紧急数据，应尽快传送(相当于高优先级的数据)， 且上图中的 Urgent Pointer 字段也会被启用。</li>
+<li>ACK：确认比特（Acknowledge）。只有当 <code>ACK＝1</code> 时确认号字段才有效，代表这个封包为确认封包。当 <code>ACK＝0</code> 时，确认号无效。</li>
+<li>PSH：（Push function）若为 1 时，代表要求对方立即传送缓冲区内的其他对应封包，而无需等缓冲满了才送。</li>
+<li>RST：复位比特(Reset)，当 <code>RST＝1</code> 时，表明 TCP 连接中出现严重差错（如由于主机崩溃或其他原因），必须释放连接，然后再重新建立运输连接。</li>
+<li>SYN：同步比特(Synchronous)，SYN 置为 1，就表示这是一个连接请求或连接接受报文，通常带有 SYN 标志的封包表示『主动』要连接到对方的意思。</li>
+<li>FIN：终止比特(Final)，用来释放一个连接。当 <code>FIN＝1</code> 时，表明此报文段的发送端的数据已发送完毕，并要求释放运输连接。</li>
+</ul>
+<h4 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h4><ul>
+<li>UDP（User Datagram Protocol，用户数据报协议）是 OSI（Open System Interconnection 开放式系统互联） 参考模型中一种无连接的传输层协议，提供面向事务的简单不可靠信息传送服务，其传输的单位是用户数据报。</li>
+</ul>
+<p><strong>特征</strong></p>
+<ul>
+<li>无连接</li>
+<li>尽最大努力交付</li>
+<li>面向报文</li>
+<li>没有拥塞控制</li>
+<li>支持一对一、一对多、多对一、多对多的交互通信</li>
+<li>首部开销小</li>
+</ul>
+<p>UDP 报文结构</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/UDP%E6%8A%A5%E6%96%87.png" class="">
+
+<p>UDP 首部</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/UDP%E9%A6%96%E9%83%A8.png" class="">
+
+<blockquote>
+<p>TCP&#x2F;UDP 图片来源于：<a target="_blank" rel="noopener" href="https://github.com/JerryC8080/understand-tcp-udp">https://github.com/JerryC8080/understand-tcp-udp</a></p>
+</blockquote>
+<h4 id="UDP如何实现可靠传输"><a href="#UDP如何实现可靠传输" class="headerlink" title="UDP如何实现可靠传输"></a>UDP如何实现可靠传输</h4><ul>
+<li>因为UDP是无连接的协议，所以在传输层上无法保证可靠传输，要想实现可靠传输，只能从应用层实现。需要实现seq&#x2F;ack机制，重传机制和窗口确认机制。</li>
+<li>接收方收到UDP之后回复个确认包，发送方有个机制，收不到确认包就要重新发送，每个包有递增的序号，接收方发现中间丢了包就要发重传请求，当网络太差时候频繁丢包，防止越丢包越重传的恶性循环，要有个发送窗口的限制，发送窗口的大小根据网络传输情况调整，调整算法要有一定自适应性。</li>
+</ul>
+<h4 id="TCP-与-UDP-的区别"><a href="#TCP-与-UDP-的区别" class="headerlink" title="TCP 与 UDP 的区别"></a>TCP 与 UDP 的区别</h4><ol>
+<li>TCP 面向连接，UDP 是无连接的；</li>
+<li>TCP 提供可靠的服务，也就是说，通过 TCP 连接传送的数据，无差错，不丢失，不重复，且按序到达；UDP 尽最大努力交付，即不保证可靠交付</li>
+<li>TCP 的逻辑通信信道是全双工的可靠信道；UDP 则是不可靠信道</li>
+<li>每一条 TCP 连接只能是点到点的；UDP 支持一对一，一对多，多对一和多对多的交互通信</li>
+<li>TCP 面向字节流（可能出现黏包问题），实际上是 TCP 把数据看成一连串无结构的字节流；UDP 是面向报文的（不会出现黏包问题）</li>
+<li>UDP 没有拥塞控制，因此网络出现拥塞不会使源主机的发送速率降低（对实时应用很有用，如 IP 电话，实时视频会议等）</li>
+<li>TCP 首部开销20字节；UDP 的首部开销小，只有 8 个字节</li>
+</ol>
+<h4 id="TCP-黏包问题"><a href="#TCP-黏包问题" class="headerlink" title="TCP 黏包问题"></a>TCP 黏包问题</h4><h5 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h5><p>TCP 是一个基于字节流的传输服务（UDP 基于报文的），“流” 意味着 TCP 所传输的数据是没有边界的。所以可能会出现两个数据包黏在一起的情况。TCP粘包就是指发送方发送的若干包数据到达接收方时粘成了一包，从接收缓冲区来看，后一包数据的头紧接着前一包数据的尾，出现粘包的原因是多方面的，可能是来自发送方，也可能是来自接收方。</p>
+<h5 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h5><ul>
+<li>发送定长包。如果每个消息的大小都是一样的，那么在接收对等方只要累计接收数据，直到数据等于一个定长的数值就将它作为一个消息。</li>
+<li>包头加上包体长度。包头是定长的 4 个字节，说明了包体的长度。接收对等方先接收包头长度，依据包头长度来接收包体。</li>
+<li>在数据包之间设置边界，如添加特殊符号 <code>\r\n</code> 标记。FTP 协议正是这么做的。但问题在于如果数据正文中也含有 <code>\r\n</code>，则会误判为消息的边界。</li>
+<li>使用更加复杂的应用层协议。</li>
+</ul>
+<h4 id="TCP-流量控制"><a href="#TCP-流量控制" class="headerlink" title="TCP 流量控制"></a>TCP 流量控制</h4><h5 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h5><p>流量控制（flow control）就是让发送方的发送速率不要太快，要让接收方来得及接收。</p>
+<p>TCP的滑动窗口用来控制接收方和发送方的发送速率，避免拥塞的发生。滑动窗口其实就是接收端的缓冲区大小，用来告诉发送方对它发送的数据有多大的缓冲空间。在接收方的滑动窗口已知的情况下，当接收方确认了连续的数据序列之后，发送方的滑动窗口向后滑动，发送下一个数据序列。</p>
+<p>接收方会在每个ACK数据包中附带自己当前的接受窗口（滑动窗口）的大小，方便发送方进行控制。</p>
+<h5 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h5><p>利用可变窗口进行流量控制</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/%E5%88%A9%E7%94%A8%E5%8F%AF%E5%8F%98%E7%AA%97%E5%8F%A3%E8%BF%9B%E8%A1%8C%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6%E4%B8%BE%E4%BE%8B.png" class="">
+
+<h4 id="TCP-拥塞控制"><a href="#TCP-拥塞控制" class="headerlink" title="TCP 拥塞控制"></a>TCP 拥塞控制</h4><h5 id="概念-1"><a href="#概念-1" class="headerlink" title="概念"></a>概念</h5><p>拥塞控制就是防止过多的数据注入到网络中，这样可以使网络中的路由器或链路不致过载。</p>
+<h5 id="方法-1"><a href="#方法-1" class="headerlink" title="方法"></a>方法</h5><ul>
+<li>慢开始( slow-start )</li>
+<li>拥塞避免( congestion avoidance )</li>
+<li>快重传( fast retransmit )</li>
+<li>快恢复( fast recovery )</li>
+</ul>
+<p>TCP的拥塞控制图</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E6%8B%A5%E5%A1%9E%E7%AA%97%E5%8F%A3cwnd%E5%9C%A8%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E6%97%B6%E7%9A%84%E5%8F%98%E5%8C%96%E6%83%85%E5%86%B5.png" class="">
+
+<p>发送方维持一个拥塞窗口 cwnd ( congestion window )的状态变量。拥塞窗口的大小取决于网络的拥塞程度，并且动态地在变化。发送方让自己的发送窗口等于拥塞窗口和接受窗口的较小值。</p>
+<p>（1）<strong>慢启动</strong>。慢启动算法的思路是当主机开始发送数据时，先以比较小的拥塞窗口进行发送，然后每次翻倍，也就是说，由小到大逐渐增加拥塞窗口的大小，而这个大小是指数增长的，即1、2、4、8、16<br>*为了防止拥塞窗口cwnd增长过大引起网络拥塞，还要另外设置一个慢启动阈值ssthresh状态变量，当拥塞窗口的大小超过慢启动阈值的时候（ cwnd &gt; ssthresh 时），停止使用慢开始算法而改用拥塞避免算法</p>
+<p>（2）<strong>拥塞避免</strong>。拥塞避免算法的思路是让拥塞窗口cwnd缓慢地增大，即每经过一个往返时间RTT就把发送方的拥塞窗口cwnd加1，而不是加倍。</p>
+<p>（3）<strong>快速重传</strong>。当发送端连续收到三个重复的ack时，表示该数据段已经丢失，需要重发。此时慢启动阈值ssth变为原来一半，拥塞窗口cwnd变为ssth+3，然后+1+1的发（每一轮rtt+1）</p>
+<p>（4）<strong>快速恢复</strong>。当超过设定的时间没有收到某个报文段的ack时，表示网络拥塞，慢启动阈值ssth变为原来一半，拥塞窗口cwnd&#x3D;1，进入慢启动阶段</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/%E5%BF%AB%E9%87%8D%E4%BC%A0%E7%A4%BA%E6%84%8F%E5%9B%BE.png" class="">
+
+<h4 id="TCP-传输连接管理"><a href="#TCP-传输连接管理" class="headerlink" title="TCP 传输连接管理"></a>TCP 传输连接管理</h4><blockquote>
+<p>因为 TCP 三次握手建立连接、四次挥手释放连接很重要，所以附上《计算机网络（第 7 版）-谢希仁》书中对此章的详细描述：<a target="_blank" rel="noopener" href="https://gitee.com/huihut/interview/raw/master/images/TCP-transport-connection-management.png">https://gitee.com/huihut/interview/raw/master/images/TCP-transport-connection-management.png</a></p>
+</blockquote>
+<h5 id="TCP-三次握手建立连接"><a href="#TCP-三次握手建立连接" class="headerlink" title="TCP 三次握手建立连接"></a>TCP 三次握手建立连接</h5><img src="/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5.png" class="">
+
+<p>【TCP 建立连接全过程解释】</p>
+<ol>
+<li>客户端发送 SYN &#x3D; 1，seq &#x3D; x 给服务器，说明客户端请求建立连接；</li>
+<li>服务端收到客户端发的 SYN，并回复 SYN+ACK 给客户端（同意建立连接）；</li>
+<li>客户端收到服务端的 SYN+ACK 后，回复 ACK 给服务端（表示客户端收到了服务端发的同意报文）；</li>
+<li>服务端收到客户端的 ACK，连接已建立，可以数据传输。</li>
+</ol>
+<h5 id="TCP-为什么要进行三次握手？"><a href="#TCP-为什么要进行三次握手？" class="headerlink" title="TCP 为什么要进行三次握手？"></a>TCP 为什么要进行三次握手？</h5><p>【答案一】因为信道不可靠，而 TCP 想在不可靠信道上建立可靠地传输，那么三次通信是理论上的最小值。（而 UDP 则不需建立可靠传输，因此 UDP 不需要三次握手。）</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://groups.google.com/forum/#!msg/pongba/kF6O7-MFxM0/5S7zIJ4yqKUJ">Google Groups . TCP 建立连接为什么是三次握手？{技术}{网络通信}</a></p>
+</blockquote>
+<p>【答案二】因为双方都需要确认对方收到了自己发送的序列号，确认过程最少要进行三次通信。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/24853633/answer/115173386">知乎 . TCP 为什么是三次握手，而不是两次或四次？</a></p>
+</blockquote>
+<p>【答案三】为了防止已失效的连接请求报文段突然又传送到了服务端，因而产生错误。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://gitee.com/huihut/interview/raw/master/images/TCP-transport-connection-management.png">《计算机网络（第 7 版）-谢希仁》</a></p>
+</blockquote>
+<h5 id="为什么使用三次握手，两次握手可不可以？"><a href="#为什么使用三次握手，两次握手可不可以？" class="headerlink" title="为什么使用三次握手，两次握手可不可以？"></a>为什么使用三次握手，两次握手可不可以？</h5><p>如果使用两次握手的话，三次握手中的最后一次缺失，服务器不能确认客户端的接收能力。</p>
+<p>举两个例子，第一种是黑客会伪造大量SYN请求发送给服务器，服务器立即确认并建立连接，分配资源，但是这一系列连接并不是真实存在的，这大大浪费了服务器的资源并且阻塞了正常用户的连接，这种也叫SYN洪泛攻击。第二种是服务器返回给客户端的ACK数据包可能会在传输的过程中丢失，而客户端没有收到该ACK数据包而拒绝接收服务器接下来发送的数据，于是服务器一直在发送，客户端一直在拒绝，形成死锁。</p>
+<h5 id="TCP-四次挥手释放连接"><a href="#TCP-四次挥手释放连接" class="headerlink" title="TCP 四次挥手释放连接"></a>TCP 四次挥手释放连接</h5><img src="/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E9%87%8A%E6%94%BE%E8%BF%9E%E6%8E%A5.png" class="">
+
+<p>【TCP 释放连接全过程解释】</p>
+<ol>
+<li>客户端发送 FIN 给服务器，说明客户端不必发送数据给服务器了（请求释放从客户端到服务器的连接）；</li>
+<li>服务器接收到客户端发的 FIN，并回复 ACK 给客户端（同意释放从客户端到服务器的连接）；</li>
+<li>客户端收到服务端回复的 ACK，此时从客户端到服务器的连接已释放（但服务端到客户端的连接还未释放，并且客户端还可以接收数据）；</li>
+<li>服务端继续发送之前没发完的数据给客户端；</li>
+<li>服务端发送 FIN+ACK 给客户端，说明服务端发送完了数据（请求释放从服务端到客户端的连接，就算没收到客户端的回复，过段时间也会自动释放）；</li>
+<li>客户端收到服务端的 FIN+ACK，并回复 ACK 给服务端（同意释放从服务端到客户端的连接）；</li>
+<li>服务端收到客户端的 ACK 后，释放从服务端到客户端的连接。</li>
+</ol>
+<h5 id="TCP-为什么要进行四次挥手？"><a href="#TCP-为什么要进行四次挥手？" class="headerlink" title="TCP 为什么要进行四次挥手？"></a>TCP 为什么要进行四次挥手？</h5><p>【问题一】TCP 为什么要进行四次挥手？ &#x2F; 为什么 TCP 建立连接需要三次，而释放连接则需要四次？</p>
+<p>【答案一】因为 TCP 是全双工模式，客户端请求关闭连接后，客户端向服务端的连接关闭（一二次挥手），服务端继续传输之前没传完的数据给客户端（数据传输），服务端向客户端的连接关闭（三四次挥手）。所以 TCP 释放连接时服务器的 ACK 和 FIN 是分开发送的（中间隔着数据传输），而 TCP 建立连接时服务器的 ACK 和 SYN 是一起发送的（第二次握手），所以 TCP 建立连接需要三次，而释放连接则需要四次。</p>
+<p>【问题二】为什么 TCP 连接时可以 ACK 和 SYN 一起发送，而释放时则 ACK 和 FIN 分开发送呢？（ACK 和 FIN 分开是指第二次和第三次挥手）</p>
+<p>【答案二】因为客户端请求释放时，服务器可能还有数据需要传输给客户端，因此服务端要先响应客户端 FIN 请求（服务端发送 ACK），然后数据传输，传输完成后，服务端再提出 FIN 请求（服务端发送 FIN）；而连接时则没有中间的数据传输，因此连接时可以 ACK 和 SYN 一起发送。</p>
+<p>【问题三】<strong>为什么客户端释放最后需要 TIME-WAIT 等待 2MSL 呢</strong>？</p>
+<p>【答案三】</p>
+<ol>
+<li>为了保证客户端发送的最后一个 ACK 报文能够到达服务端。若未成功到达，则服务端超时重传 FIN+ACK 报文段，客户端再重传 ACK，并重新计时。</li>
+<li>防止已失效的连接请求报文段出现在本连接中。TIME-WAIT 持续 2MSL 可使本连接持续的时间内所产生的所有报文段都从网络中消失，这样可使下次连接中不会出现旧的连接报文段。</li>
+</ol>
+<p> 【问题四】TCP怎么保证可靠性</p>
+<p> 【答案四】</p>
+<ol>
+<li>校验和<br>发送的数据包的二进制相加然后取反，目的是检测数据在传输过程中的任何变化。如果收到段的检验和有差错，TCP将丢弃这个报文段和不确认收到此报文段。 </li>
+<li>确认应答+序列号<br>TCP给发送的每一个包进行编号，接收方对数据包进行排序，把有序数据传送给应用层。 TCP 有限状态机</li>
+<li>超时重传<br>当TCP发出一个段后，它启动一个定时器，等待目的端确认收到这个报文段。如果不能及时收到一个确认，将重发这个报文段。 </li>
+<li>流量控制<br>TCP连接的每一方都有固定大小的缓冲空间，TCP的接收端只允许发送端发送接收端缓冲区能接纳的数据。当接收方来不及处理发送方的数据，能提示发送方降低发送的速率，防止包丢失。TCP使用的流量控制协议是可变大小的滑动窗口协议。</li>
+<li>拥塞控制<br>当网络拥塞时，减少数据的发送。</li>
+</ol>
+<p>TCP 有限状态机图片</p>
+<img src="/2023/04/09/%E8%AE%A1%E7%BD%91/TCP%E7%9A%84%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA.png" class="">
+
+<h5 id="服务器端出现大量close-wait原因"><a href="#服务器端出现大量close-wait原因" class="headerlink" title="服务器端出现大量close_wait原因"></a>服务器端出现大量close_wait原因</h5><ul>
+<li>close_wait是被动关闭连接是形成的，根据TCP状态机，服务器端收到客户端发送的FIN，TCP协议栈会自动发送ACK，链接进入close_wait状态。但如果服务器端不执行socket的close()操作（即不向客户端发送FIN），状态就不能由close_wait迁移到last_ack，则系统中会存在很多close_wait状态的连接</li>
+<li>服务器内部业务处理占用了过多时间，都没能处理完业务；或者还有数据需要发送；或者服务器的业务逻辑有问题，没有执行close()方法</li>
+<li>服务器的父进程派生出子进程，子进程继承了socket，收到FIN的时候子进程处理但父进程没有处理该信号，导致socket的引用不为0无法回收</li>
+</ul>
+<h3 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h3><h4 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h4><ul>
+<li>DNS（Domain Name System，域名系统）是互联网的一项服务。它作为将域名和 IP 地址相互映射的一个分布式数据库，能够使人更方便地访问互联网。DNS 使用 TCP 和 UDP 端口 53。当前，对于每一级域名长度的限制是 63 个字符，域名总长度则不能超过 253 个字符。</li>
+</ul>
+<p>域名：</p>
+<ul>
+<li><code>域名 ::= &#123;&lt;三级域名&gt;.&lt;二级域名&gt;.&lt;顶级域名&gt;&#125;</code>，如：<code>blog.huihut.com</code></li>
+</ul>
+<h4 id="FTP"><a href="#FTP" class="headerlink" title="FTP"></a>FTP</h4><ul>
+<li>FTP（File Transfer Protocol，文件传输协议）是用于在网络上进行文件传输的一套标准协议，使用客户&#x2F;服务器模式，使用 TCP 数据报，提供交互式访问，双向传输。</li>
+<li>TFTP（Trivial File Transfer Protocol，简单文件传输协议）一个小且易实现的文件传输协议，也使用客户-服务器方式，使用UDP数据报，只支持文件传输而不支持交互，没有列目录，不能对用户进行身份鉴定</li>
+</ul>
+<h4 id="TELNET"><a href="#TELNET" class="headerlink" title="TELNET"></a>TELNET</h4><ul>
+<li>TELNET 协议是 TCP&#x2F;IP 协议族中的一员，是 Internet 远程登陆服务的标准协议和主要方式。它为用户提供了在本地计算机上完成远程主机工作的能力。</li>
+<li>HTTP（HyperText Transfer Protocol，超文本传输协议）是用于从 WWW（World Wide Web，万维网）服务器传输超文本到本地浏览器的传送协议。</li>
+<li>SMTP（Simple Mail Transfer Protocol，简单邮件传输协议）是一组用于由源地址到目的地址传送邮件的规则，由它来控制信件的中转方式。SMTP 协议属于 TCP&#x2F;IP 协议簇，它帮助每台计算机在发送或中转信件时找到下一个目的地。</li>
+<li>Socket 建立网络通信连接至少要一对端口号（Socket）。Socket 本质是编程接口（API），对 TCP&#x2F;IP 的封装，TCP&#x2F;IP 也要提供可供程序员做网络开发所用的接口，这就是 Socket 编程接口。</li>
+</ul>
+<h4 id="WWW"><a href="#WWW" class="headerlink" title="WWW"></a>WWW</h4><ul>
+<li>WWW（World Wide Web，环球信息网，万维网）是一个由许多互相链接的超文本组成的系统，通过互联网访问</li>
+</ul>
+<h5 id="URL"><a href="#URL" class="headerlink" title="URL"></a>URL</h5><ul>
+<li>URL（Uniform Resource Locator，统一资源定位符）是因特网上标准的资源的地址（Address）</li>
+</ul>
+<p>标准格式：</p>
+<ul>
+<li><code>协议类型:[//服务器地址[:端口号]][/资源层级UNIX文件路径]文件名[?查询][#片段ID]</code></li>
+</ul>
+<p>完整格式：</p>
+<ul>
+<li><code>协议类型:[//[访问资源需要的凭证信息@]服务器地址[:端口号]][/资源层级UNIX文件路径]文件名[?查询][#片段ID]</code></li>
+</ul>
+<blockquote>
+<p>其中【访问凭证信息@；:端口号；?查询；#片段ID】都属于选填项<br>如：<code>https://github.com/huihut/interview#cc</code></p>
+</blockquote>
+<ul>
+<li><strong>网页解析的过程和方法</strong><ol>
+<li>首先是html文档解析，浏览器会将html文档生成解析树，也就是DOM树，它由dom元素以及属性节点组成。</li>
+<li>然后浏览器加载过程中如果遇到了外部css文件或者图片资源，还会另外发送请求来获取css文件和资源，这个请求通常是异步的，不会影响html文档的加载。</li>
+<li>如果浏览器在加载时遇到了js文件，则会挂起渲染的线程，等待js文件加载解析完毕才恢复html的渲染线程。</li>
+<li>然后是css解析，将css文件解析为样式表对象来渲染DOM树。</li>
+</ol>
+</li>
+<li><strong>在浏览器中输入URL执行全部过程</strong><ol>
+<li>首先是域名解析，客户端使用DNS协议将URL解析为对应的IP地址；</li>
+<li>然后建立TCP连接，客户端与服务器通过三次握手建立TCP连接；</li>
+<li>接着是http连接，客户端向服务器发送http连接请求； （http连接无需额外连接，直接通过已经建立的TCP连接发送）</li>
+<li>服务器对客户端发来的http请求进行处理，并返回响应；</li>
+<li>释放tcp连接</li>
+<li>客户端接收到http响应，将结果渲染展示给用户。</li>
+</ol>
+</li>
+</ul>
+<h5 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h5><p>HTTP（HyperText Transfer Protocol，超文本传输协议）是一种用于分布式、协作式和超媒体信息系统的应用层协议。HTTP 是万维网的数据通信的基础。</p>
+<p>请求方法</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OPTIONS</td>
+<td>请求一些选项信息，允许客户端查看服务器的性能</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>请求指定的页面信息，并返回实体主体</td>
+</tr>
+<tr>
+<td>HEAD</td>
+<td>类似于 get 请求，只不过返回的响应中没有具体的内容，用于获取报头</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>向指定资源提交数据进行处理请求（例如提交表单或者上传文件）。数据被包含在请求体中。POST请求可能会导致新的资源的建立和&#x2F;或已有资源的修改</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td>从客户端向服务器传送的数据取代指定的文档的内容</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>请求服务器删除指定的页面</td>
+</tr>
+<tr>
+<td>TRACE</td>
+<td>回显服务器收到的请求，主要用于测试或诊断</td>
+</tr>
+</tbody></table>
+<p>状态码（Status-Code）</p>
+<ul>
+<li>1xx：表示通知信息，如请求收到了或正在进行处理<ul>
+<li>100 Continue：继续，客户端应继续其请求</li>
+<li>101 Switching Protocols 切换协议。服务器根据客户端的请求切换协议。只能切换到更高级的协议，例如，切换到 HTTP 的新版本协议</li>
+</ul>
+</li>
+<li>2xx：表示成功，如接收或知道了<ul>
+<li>200 OK: 请求成功</li>
+</ul>
+</li>
+<li>3xx：表示重定向，如要完成请求还必须采取进一步的行动<ul>
+<li>301 Moved Permanently: 永久移动。请求的资源已被永久的移动到新 URL，返回信息会包括新的 URL，浏览器会自动定向到新 URL。今后任何新的请求都应使用新的 URL 代替</li>
+</ul>
+</li>
+<li>4xx：表示客户的差错，如请求中有错误的语法或不能完成<ul>
+<li>400 Bad Request: 客户端请求的语法错误，服务器无法理解</li>
+<li>401 Unauthorized: 请求要求用户的身份认证</li>
+<li>403 Forbidden: 服务器理解请求客户端的请求，但是拒绝执行此请求（权限不够）</li>
+<li>404 Not Found: 服务器无法根据客户端的请求找到资源（网页）。通过此代码，网站设计人员可设置 “您所请求的资源无法找到” 的个性页面</li>
+<li>408 Request Timeout: 服务器等待客户端发送的请求时间过长，超时</li>
+</ul>
+</li>
+<li>5xx：表示服务器的差错，如服务器失效无法完成请求<ul>
+<li>500 Internal Server Error: 服务器内部错误，无法完成请求</li>
+<li>503 Service Unavailable: 由于超载或系统维护，服务器暂时的无法处理客户端的请求。延时的长度可包含在服务器的 Retry-After 头信息中</li>
+<li>504 Gateway Timeout: 充当网关或代理的服务器，未及时从远端服务器获取请求</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>更多状态码：<a target="_blank" rel="noopener" href="http://www.runoob.com/http/http-status-codes.html">菜鸟教程 . HTTP状态码</a></p>
+</blockquote>
+<h5 id="HTTP协议特点"><a href="#HTTP协议特点" class="headerlink" title="HTTP协议特点"></a>HTTP协议特点</h5><ul>
+<li><strong>简单快速</strong></li>
+</ul>
+<p>客户向服务器请求服务时，只需传送请求方法和路径。请求方法常用的有GET、HEAD、POST。每种方法规定了客户与服务器联系的类型不同。由于HTTP协议简单，使得HTTP服务器的程序规模小，因而通信速度很快。</p>
+<ul>
+<li><strong>支持B&#x2F;S及C&#x2F;S模式</strong></li>
+<li><strong>灵活</strong></li>
+</ul>
+<p>HTTP允许传输任意类型的数据对象。正在传输的类型由Content-Type加以标记。</p>
+<ul>
+<li><strong>无连接</strong></li>
+</ul>
+<p>无连接的含义是限制每次连接只处理一个请求。服务器处理完客户的请求，并收到客户的应答后，即断开连接。采用这种方式可以节省传输时间。</p>
+<ul>
+<li><strong>无状态</strong></li>
+</ul>
+<p>HTTP协议是无状态协议。无状态是指协议对于事务处理没有记忆能力。缺少状态意味着如果后续处理需要前面的信息，则它必须重传，这样可能导致每次连接传送的数据量增大。另一方面，在服务器不需要先前信息时它的应答就较快。</p>
+<h5 id="HTTP协议与TCP的区别与联系"><a href="#HTTP协议与TCP的区别与联系" class="headerlink" title="HTTP协议与TCP的区别与联系"></a>HTTP协议与TCP的区别与联系</h5><p>联系：Http协议是建立在TCP协议基础之上的，当浏览器需要从服务器获取网页数据的时候，会发出一次Http请求。Http会通过TCP建立起一个到服务器的连接通道，当本次请求需要的数据传输完毕后，Http会立即将TCP连接断开，这个过程是很短的。</p>
+<p>区别：HTTP和TCP位于不同的网络分层。TCP是传输层的协议，定义的是数据传输和连接的规范，而HTTP是应用层的，定义的是数据的内容的规范。<br>建立一个TCP请求需要进行三次握手，而由于http是建立在tcp连接之上的，建立一个http请求通常包含请求和响应两个步骤。</p>
+<h5 id="HTTP-x2F-1-0和HTTP-x2F-1-1的区别"><a href="#HTTP-x2F-1-0和HTTP-x2F-1-1的区别" class="headerlink" title="HTTP&#x2F;1.0和HTTP&#x2F;1.1的区别"></a>HTTP&#x2F;1.0和HTTP&#x2F;1.1的区别</h5><ul>
+<li>HTTP1.0 只保持短暂的连接，浏览器的每次请求都需要与服务器建立一个 TCP 连接，但是最新的http&#x2F;1.0加入了长连接，只需要在客户端给服务器发送的http报文头部加入Connection:keep-alive</li>
+<li>HTTP 1.1 支持持久连接，默认进行持久连接，在一个 TCP 连接上可以传送多个 HTTP 请求和响应，减少了建立和关闭连接的消耗和延迟。</li>
+</ul>
+<h5 id="HTTP协议和HTTPS协议区别"><a href="#HTTP协议和HTTPS协议区别" class="headerlink" title="HTTP协议和HTTPS协议区别"></a>HTTP协议和HTTPS协议区别</h5><ol>
+<li>HTTP协议是以明文的方式在网络中传输数据，而HTTPS协议传输的数据则是经过TLS加密后的，HTTPS具有更高的安全性</li>
+<li>HTTPS在TCP三次握手阶段之后，还需要进行SSL 的handshake，协商加密使用的对称加密密钥</li>
+<li>HTTPS协议需要服务端申请证书，浏览器端安装对应的根证书</li>
+<li>HTTP协议端口是80，HTTPS协议端口是443</li>
+<li><strong>HTTPS缺点</strong><ul>
+<li>HTTPS握手阶段延时较高：由于在进行HTTP会话之前还需要进行SSL握手，因此HTTPS协议握手阶段延时增加</li>
+<li>HTTPS部署成本高：一方面HTTPS协议需要使用证书来验证自身的安全性，所以需要购买CA证书；另一方面由于采用HTTPS协议需要进行加解密的计算，占用CPU资源较多，需要的服务器配置或数目高</li>
+</ul>
+</li>
+<li><strong>HTTPS优点</strong>：<ul>
+<li>HTTPS传输数据过程中使用密钥进行加密，所以安全性更高</li>
+<li>HTTPS协议可以认证用户和服务器，确保数据发送到正确的用户和服务</li>
+</ul>
+</li>
+</ol>
+<h5 id="Get和Post区别"><a href="#Get和Post区别" class="headerlink" title="Get和Post区别"></a>Get和Post区别</h5><ol>
+<li>get方法不会修改服务器上的资源，它的查询是没有副作用的，而post有可能会修改服务器上的资源</li>
+<li>get可以保存为书签，可以用缓存来优化，而post不可以</li>
+<li>get把请求附在url上，而post把参数附在http包的包体中</li>
+<li>浏览器和服务器一般对get方法所提交的url长度有限制，一般是1k或者2k，而对post方法所传输的参数大小限制为80k到4M不等</li>
+<li>post可以传输二进制编码的信息，get的参数一般只支持ASCII</li>
+</ol>
+<h5 id="其他协议"><a href="#其他协议" class="headerlink" title="其他协议"></a>其他协议</h5><ul>
+<li>SMTP（Simple Main Transfer Protocol，简单邮件传输协议）是在 Internet 传输 Email 的标准，是一个相对简单的基于文本的协议。在其之上指定了一条消息的一个或多个接收者（在大多数情况下被确认是存在的），然后消息文本会被传输。可以很简单地通过 Telnet 程序来测试一个 SMTP 服务器。SMTP 使用 TCP 端口 25。</li>
+<li>DHCP（Dynamic Host Configuration Protocol，动态主机设置协议）是一个局域网的网络协议，使用 UDP 协议工作，主要有两个用途：<ul>
+<li>用于内部网络或网络服务供应商自动分配 IP 地址给用户</li>
+<li>用于内部网络管理员作为对所有电脑作中央管理的手段</li>
+</ul>
+</li>
+<li>SNMP（Simple Network Management Protocol，简单网络管理协议）构成了互联网工程工作小组（IETF，Internet Engineering Task Force）定义的 Internet 协议族的一部分。该协议能够支持网络管理系统，用以监测连接到网络上的设备是否有任何引起管理上关注的情况。</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2023/04/09/%E8%AE%A1%E7%BD%91/" title="" target="_blank" rel="external">http://example.com/2023/04/09/计网/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Hexiangkun" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Hexiangkun" target="_blank"><span class="text-dark">HXK</span><small class="ml-1x"></small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/04/09/webserver/" title="webserver"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/04/09/%E6%8E%92%E5%BA%8F/" title="排序"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.png" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.png" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="hhttps://github.com/Hexiangkun" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>
